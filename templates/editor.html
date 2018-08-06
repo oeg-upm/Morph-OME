@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+
+
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.3.3/dist/semantic.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.3.3/dist/semantic.min.js"></script>
+
+
+    <script>
+ var properties = ["aaa", "bbb", "ccc"];
+  $( function() {
+    var labels = [
+        {{labels_txt|safe}}
+    ];
+    $( "#concept" ).autocomplete({
+          source: labels,
+          select: function( event, ui ) {
+            console.log('item is chosen');
+            //console.log($("#concept").val());
+            console.log(ui.item.value);
+            $.get( "get_properties?concept="+ui.item.value, function( data ) {
+              //alert( "Load was performed." );
+              console.log(data['properties']);
+              properties = data['properties'];
+              console.log(properties);
+              $( ".property" ).autocomplete({
+                source: properties
+              });// auto complete
+            });//get
+           }// select function
+    });//auto complete
+} );
+</script>
+</head>
+<body>
+
+
+
+
+<br>
+
+<form method="POST" action="generate_mappings" class="ui form">
+
+    <p>detected iterator: {{iterator}}</p>
+    <input type="hidden" name="dataset" value="{{dataset}}"/>
+    <div class="ui-widget field">
+        <label for="concept">Choose the concept of this file: </label>
+        <input id="concept"  name="entity_class"/>
+    </div>
+
+<hr>
+
+    <input type="hidden" name="distribution" value="{{distribution}}"/>
+
+    <div class="field">
+        <label for="entity_column">Entity Column (primary key)</label>
+
+    <select class="ui dropdown" name="entity_column"  id="entity_column">
+
+        {%for header in headers%}
+            <option value="{{header}}">{{header}}</option>
+        {%endfor%}
+
+</select>
+    </div>
+
+    <table class="table">
+        <thead>
+        <tr>
+            <th scope="col">Header</th>
+            <th scope="col">Schema</th>
+        </tr>
+        </thead>
+        <tbody>
+
+            {%for header in headers%}
+            <tr>
+                <td>{{header}}</td>
+                <td><input type="text" name="form_val_{{loop.index}}" class="property"></td>
+            </tr>
+                <input type="hidden" name="form_key_{{loop.index}}" value="{{header}}"/>
+            {%endfor%}
+        </tbody>
+    </table>
+    <input type="submit" class="form-control btn btn-primary" name="Create" value="Create"/>
+</form>
+
+
+</body>
+</html>
