@@ -18,4 +18,4 @@ One you run the application,
 
 
 # Screenshot
-![screenshot](https://github.com/ahmad88me/OME/raw/master/screenshot.png)
+![screensho](https://github.com/ahmad88me/OME/raw/master/screenshot.png)
