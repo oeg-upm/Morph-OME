@@ -1,4 +1,4 @@
-[OME](https://github.com/ahmad88me/OME/raw/master/logo.png)
+![OME](https://github.com/ahmad88me/OME/raw/master/logo.png)
 # OME
 Online Mapping Editor. Generate R2RML (and other formats soon).
 
