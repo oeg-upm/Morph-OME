@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.3.3/dist/semantic.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.3.3/dist/semantic.min.js"></script>
+</head>
+<body>
+
+{%if msg%}
+ <div class="ui message">
+  <div class="header">
+    Mapping content
+  </div>
+  <p>{{msg}}</p>
+</div>
+{%endif%}
+
+{%if warning_msg%}
+<div class="ui warning message">
+    <div class="header">
+        Warning!
+    </div>
+    {{warning_msg}}
+</div>
+{%endif%}
+
+{%if error_msg%}
+<div class="ui error message">
+    <div class="header">
+        Error!
+    </div>
+</div>
+{%endif%}
+
+
+</body>
+</html>

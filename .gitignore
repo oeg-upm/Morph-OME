@@ -1,3 +1,5 @@
+*.csv
+*.r2rml
 .idea/
 
 # Byte-compiled / optimized / DLL files
