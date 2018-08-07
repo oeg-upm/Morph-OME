@@ -1,6 +1,6 @@
 ![OME](https://github.com/ahmad88me/OME/raw/master/logo.png)
 
-Online Mapping Editor. Generate R2RML (and other formats) without writing a single line.
+An Online Mapping Editor to generate R2RML (and other formats) without writing a single line.
 
 
 # Example
