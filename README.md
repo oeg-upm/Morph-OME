@@ -4,5 +4,5 @@ An Online Mapping Editor to generate R2RML (and other formats) without writing a
 
 
 # Example
-If you are running it locally, add this link
-`http://127.0.0.1:5000/?source=https://petitions.gov.je/petitions.csv`
+One you run the application,
+`https://petitions.gov.je/petitions.csv`

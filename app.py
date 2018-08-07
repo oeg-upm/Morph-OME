@@ -12,20 +12,25 @@ UPLOAD_DIR = os.path.join(BASE_DIR, 'upload')
 
 
 @app.route("/")
+def home():
+    return render_template('index.html')
+
+
+@app.route("/editor")
 def editor():
     source = request.args.get('source', default=None)
     file_type = request.args.get('format', default="csv")
     error_msg = None
     warning_msg = None
     file_name = ""
-    if source is None:
+    if source is None or source.strip() == '':
         headers = ["AAA", "BBB", "CCC"]
-    elif source.startswith('file:/'):
-        original_file_name = source.split('/')[-1]
-        headers = util.get_headers(source, file_type=file_type)
-        file_name = source.split('/')[-1].split('.')[0] + "-" + util.get_random_string(4) + "." + source.split('.')[-1]
-        if headers == []:
-            warning_msg = "Can't parse the source file %s" % source
+    # elif source.startswith('file:/'):
+    #     original_file_name = source.split('/')[-1]
+    #     headers = util.get_headers(source, file_type=file_type)
+    #     file_name = source.split('/')[-1].split('.')[0] + "-" + util.get_random_string(4) + "." + source.split('.')[-1]
+    #     if headers == []:
+    #         warning_msg = "Can't parse the source file %s" % source
     else:
         r = requests.get(source, allow_redirects=True)
         if r.status_code == 200:

@@ -1,13 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.3.3/dist/semantic.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.3.3/dist/semantic.min.js"></script>
-</head>
-<body>
-
+{% extends "layout.html" %}
+{% block content%}
 {%if msg%}
  <div class="ui message">
   <div class="header">
@@ -34,6 +26,4 @@
 </div>
 {%endif%}
 
-
-</body>
-</html>
+{%endblock%}

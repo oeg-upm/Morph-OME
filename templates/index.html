@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{%block content%}
+        <form class="ui form" action="editor" method="GET">
+  <div class="field">
+    <label>Enter the URL of your CSV file</label>
+    <input type="url" name="source" placeholder="http://your_csv_file_url" required>
+  </div>
+  <button class="ui button" type="submit">Open With Editor</button>
+</form>
+
+{%endblock%}
+

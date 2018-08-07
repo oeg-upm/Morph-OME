@@ -1,17 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-
-
+{% extends "base.html" %}
+{%block head%}
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.3.3/dist/semantic.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.3.3/dist/semantic.min.js"></script>
-
 
     <script>
  var properties = ["aaa", "bbb", "ccc"];
@@ -39,9 +30,10 @@
 } );
 
     </script>
-</head>
-<body>
 
+{%endblock%}
+
+{%block content%}
 {%if warning_msg%}
 <div class="ui warning message">
     <div class="header">
@@ -109,6 +101,5 @@
     <button type="submit" class="fluid  ui secondary basic button">Generate Mappings</button>
 </form>
 
+{%endblock%}
 
-</body>
-</html>
