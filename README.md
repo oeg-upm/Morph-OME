@@ -11,11 +11,14 @@ One you run the application,
 # To install locally
 1. Create virtual environment [here](https://docs.python-guide.org/dev/virtualenvs/) (recommended by not required)
 2. Access the virtual environment using `source`
-2. Install pip [here](https://pip.pypa.io/en/stable/installing/)
-3. Install requirements ``` pip install -r requirements.txt ```
-4. Run the application ``` python app.py ```
-5. Open the browser to the url [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
+3. Install pip [here](https://pip.pypa.io/en/stable/installing/)
+4. Install requirements ``` pip install -r requirements.txt ```
+5. Run the application ``` python app.py ```
+6. Open the browser to the url [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
 
 
 # Screenshot
 ![screenshot](https://github.com/ahmad88me/OME/raw/master/screenshot.png)
+
+# Remarks
+* To run the application on a specific port (e.g. say port 5001) ``` python app.py 5001```.
