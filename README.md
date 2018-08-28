@@ -1,4 +1,4 @@
-![OME](https://github.com/ahmad88me/OME/raw/master/logo.png)
+![OME](https://github.com/oeg-upm/OME/raw/master/logo.png)
 
 An Online Mapping Editor to generate R2RML (and other formats) without writing a single line.
 
@@ -18,7 +18,7 @@ One you run the application,
 
 
 # Screenshot
-![screenshot](https://github.com/ahmad88me/OME/raw/master/screenshot.png)
+![screenshot](https://github.com/oeg-upm/OME/raw/master/screenshot.png)
 
 # Remarks
 * To run the application on a specific port (e.g. say port 5001) ``` python app.py 5001```.
