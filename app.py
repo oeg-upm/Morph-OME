@@ -3,6 +3,7 @@ import json
 from flask import Flask, render_template, jsonify, request, send_from_directory
 import requests
 import util
+import sys
 app = Flask(__name__)
 
 
@@ -99,4 +100,7 @@ def generate_mapping():
 
 
 if __name__ == '__main__':
-   app.run(debug=True)
+    if len(sys.argv) == 2 and sys.argv[1].isdigit():
+        app.run(debug=True, port=int(sys.argv[1]))
+    else:
+        app.run(debug=True)
