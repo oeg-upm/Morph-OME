@@ -1,9 +1,9 @@
-{% extends "layout.html" %}
+{% extends "base.html" %}
 {% block content%}
 {%if msg%}
  <div class="ui message">
   <div class="header">
-    Mapping content
+    {{msg_title}}
   </div>
   <p>{{msg}}</p>
 </div>
@@ -23,6 +23,7 @@
     <div class="header">
         Error!
     </div>
+    {{error_msg}}
 </div>
 {%endif%}
 
