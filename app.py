@@ -103,7 +103,7 @@ def generate_mapping():
                 break
         # Assuming the file name has at least a single . to separate the file name and the extension
         file_name_without_ext = ".".join(file_name.split('.')[:-1])
-        mapping_file_name = file_name_without_ext+"-"+get_random_text()+"-"+".r2rml"
+        mapping_file_name = file_name_without_ext+"-"+get_random_text()+".r2rml"
         mapping_file_dir = os.path.join(UPLOAD_DIR, mapping_file_name)
         util.generate_r2rml_mappings(mapping_file_dir, file_name, entity_class, entity_column, mappings)
         f = open(mapping_file_dir)
@@ -112,12 +112,13 @@ def generate_mapping():
         # return render_template('msg.html', msg=mapping_content)
         if 'callback' in request.form and request.form['callback'].strip() != "":
             callback_url = request.form['callback'].strip()
-            files = {'mapping_file': open(mapping_file_dir, 'rb')}
+            files = {'file': open(mapping_file_dir, 'rb')}
             try:
                 r = requests.post(callback_url, files=files)
                 if r.status_code == 200:
                     return render_template('msg.html', msg="Your mappings has been sent", msg_title="Result")
                 else:
+                    print r.content
                     return render_template('msg.html', error_msg="Error sending the mappings to :"+callback_url)
             except Exception as e:
                 print("Exception: "+str(e))
