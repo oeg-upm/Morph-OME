@@ -46,6 +46,13 @@ def generate_r2rml_mappings(mapping_file_dir, file_name, entity_class, entity_co
     property_column_mapping = "\n".join(proper_mappings_list)
     print "proper mappings list: "
     print property_column_mapping
+    table_name = file_name.upper()
+    if table_name[-4:] == ".CSV":
+        table_name = table_name[:-4]
+    else:
+        #print table_name[:-4]
+        print "Note that the filename is not terminated with .CSV"
+        #raise Exception("the file name should ends up with .CSV ")
     mapping_content = u"""
     @prefix rr: <http://www.w3.org/ns/r2rml#> .
     @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -66,7 +73,7 @@ def generate_r2rml_mappings(mapping_file_dir, file_name, entity_class, entity_co
         ];
         %s
     .
-    """ % (mapping_id, file_name.upper(), entity_class, entity_column.upper(), property_column_mapping)
+    """ % (mapping_id, table_name, entity_class, entity_column.upper(), property_column_mapping)
     print mapping_content
     f = open(mapping_file_dir, 'w')
     f.write(mapping_content.encode('utf8'))
