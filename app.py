@@ -95,9 +95,9 @@ def generate_mapping():
         for i in range(len(request.form.keys())):
             key = 'form_key_' + str(i)
             val = 'form_val_' + str(i)
-            print "key = ", key
-            print "val = ", val
-            print list(request.form.keys())
+            #print "key = ", key
+            #print "val = ", val
+            #print list(request.form.keys())
 
             if key in request.form and val in request.form:
                 if request.form[val].strip() != '':
