@@ -89,18 +89,24 @@ def generate_mapping():
         entity_class = request.form['entity_class']
         entity_column = request.form['entity_column']
         file_name = request.form['file_name']
-        # print "request form: "
-        # print list(request.form.keys())
+        #print "request form: "
+        #print list(request.form.keys())
         mappings = []
         for i in range(len(request.form.keys())):
             key = 'form_key_' + str(i)
             val = 'form_val_' + str(i)
+            print "key = ", key
+            print "val = ", val
+            print list(request.form.keys())
+
             if key in request.form and val in request.form:
                 if request.form[val].strip() != '':
                     element = {"key": request.form[key], "val": request.form[val]}
                     mappings.append(element)
             else:
-                break
+                continue
+
+        print "mappings = ", mappings
         # Assuming the file name has at least a single . to separate the file name and the extension
         file_name_without_ext = ".".join(file_name.split('.')[:-1])
         mapping_file_name = file_name_without_ext+"-"+get_random_text()+".r2rml"
