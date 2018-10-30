@@ -33,8 +33,8 @@ def get_headers_csv(file_dir):
 
 
 def generate_r2rml_mappings(mapping_file_dir, file_name, entity_class, entity_column, mappings):
-    print "mappings are: "
-    print mappings
+    #print "mappings are: "
+    #print mappings
     mapping_id = get_random_string(10)
     single_property_mapping = u"""
         rr:predicateObjectMap [
@@ -44,7 +44,7 @@ def generate_r2rml_mappings(mapping_file_dir, file_name, entity_class, entity_co
     """
     proper_mappings_list = [single_property_mapping % (m["val"].replace('http://schema.org/', ''), m["key"].upper()) for m in mappings]
     property_column_mapping = "\n".join(proper_mappings_list)
-    print "proper mappings list: "
+    print "predicate object mappings: "
     print property_column_mapping
     table_name = file_name.upper()
     if table_name[-4:] == ".CSV":
