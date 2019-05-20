@@ -1,4 +1,4 @@
-FROM ahmad88me/ome:latest
+FROM oegupm/ome:latest
 WORKDIR /app
 COPY data data
 COPY templates templates
