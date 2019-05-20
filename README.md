@@ -8,7 +8,12 @@ One you run the application,
 `https://petitions.gov.je/petitions.csv`
 
 
-# To install locally
+# Run with Docker
+1. `sh run_docker.sh`
+2. In the browser visit `http://127.0.0.1:5000`
+
+
+# How to install it locally
 1. Create virtual environment [here](https://docs.python-guide.org/dev/virtualenvs/) (recommended by not required) e.g. ```virtualenv -p /usr/bin/python2.7 .venv```
 2. Access the virtual environment using `source .venv/bin/activate`
 3. Install pip [here](https://pip.pypa.io/en/stable/installing/)
