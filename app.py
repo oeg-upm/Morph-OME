@@ -1,6 +1,7 @@
 import os
 import json
 from flask import Flask, render_template, jsonify, request, send_from_directory
+from werkzeug.utils import secure_filename
 import requests
 import util
 import sys
@@ -15,72 +16,95 @@ DATA_DIR = os.path.join(BASE_DIR, 'data')
 UPLOAD_DIR = os.path.join(BASE_DIR, 'upload')
 DOWNLOAD = False
 
+
 @app.route("/")
 def home():
-    return render_template('index.html')
+    datasets = []
+    print("datadir: "+DATA_DIR)
+    for f in os.listdir(DATA_DIR):
+        fdir = os.path.join(DATA_DIR,f)
+        print("checking f: "+fdir)
+        if os.path.isdir(fdir):
+            print("isdir: "+fdir)
+            if os.path.exists(os.path.join(fdir, 'classes.txt')) and os.path.exists(os.path.join(fdir, 'properties.txt')):
+                datasets.append(f)
+    print(datasets)
+    return render_template('index.html', datasets=datasets)
 
 
-@app.route("/editor")
+@app.route("/editor", methods=['POST'])
 def editor():
-    source = request.args.get('source', default=None)
-    original_file_name = source.split('/')[-1]
-    file_type = request.args.get('format', default="csv")
-    callback_url = request.args.get('callback', default="")
+    if 'format' in request.form:
+        file_type = request.form['format']
+    else:
+        file_type = 'csv'
+    if 'callback' in request.form:
+        callback_url = request.form['callback']
+    else:
+        callback_url = None
+    ontologies = request.form.getlist('ontologies')
+    if len(ontologies) == 0:
+        return render_template('msg.html', msg="You should select at least one ontology", msg_title="Error")
+    print("number of ontologies: "+str(len(ontologies)))
+    print(ontologies)
+    print(request.form)
     error_msg = None
     warning_msg = None
-    file_name = ""
-    if source is None or source.strip() == '':
-        headers = ["AAA", "BBB", "CCC"]
-    # elif source.startswith('file:/'):
-    #     original_file_name = source.split('/')[-1]
-    #     headers = util.get_headers(source, file_type=file_type)
-    #     file_name = source.split('/')[-1].split('.')[0] + "-" + util.get_random_string(4) + "." + source.split('.')[-1]
-    #     if headers == []:
-    #         warning_msg = "Can't parse the source file %s" % source
-    else:
-        if DOWNLOAD:
-            r = requests.get(source, allow_redirects=True)
-            if r.status_code == 200:
-                fname = source.split('/')[-1].split('.')[0] + "-" + util.get_random_string(4) + "." + source.split('.')[-1]
-                file_name = fname
-                uploaded_file_dir = os.path.join(UPLOAD_DIR, fname)
-                f = open(uploaded_file_dir, 'w')
-                f.write(r.content)
-                f.close()
-                headers = util.get_headers(uploaded_file_dir, file_type=file_type)
-                if headers == []:
-                    warning_msg = "Can't parse the source file %s" % source
+    uploaded = False
+    if 'source' not in request.form or request.form['source'].strip()=="":
+        if 'sourcefile' in request.files:
+            sourcefile = request.files['sourcefile']
+            if sourcefile.filename != "":
+                original_file_name = sourcefile.filename
+                filename = secure_filename(sourcefile.filename)
+                uploaded_file_dir = os.path.join(UPLOAD_DIR, filename)
+                sourcefile.save(uploaded_file_dir)
+                uploaded = True
             else:
-                error_msg = "the source %s can not be accessed" % source
-                print error_msg
-                headers = []
+                print("blank source file")
         else:
-            headers = util.get_headers(source, file_type=file_type)
-            if headers == []:
-                warning_msg = "Can't parse the source file %s" % source
-    # if callback_url:
-    #     files = {'upload_file': open('file.txt', 'rb')}
-    #     values = {'DB': 'photcat', 'OUT': 'csv', 'SHORT': 'short'}
-    #     r = requests.post(url, files=files, data=values)
-    #     return render_template('msg.html', msg="Your mappings has been sent", msg_title="Result")
-    # else:
-    f = open(os.path.join(DATA_DIR, "labels.txt"))
-    return render_template('editor.html', labels_txt=f.read(), headers=headers, callback=callback_url, file_name=original_file_name, error_msg=error_msg, warning_msg=warning_msg)
+            print('not sourcefile')
+        if not uploaded:
+            return render_template('msg.html', msg="Expecting an input file", msg_title="Error")
+    else:
+        source = request.form['source']
+        original_file_name = source.split('/')[-1]
+        filename = secure_filename(original_file_name)
+        r = requests.get(source, allow_redirects=True)
+        if r.status_code == 200:
+            fname = util.get_random_string(4) + "-" + filename
+            uploaded_file_dir = os.path.join(UPLOAD_DIR, fname)
+            f = open(uploaded_file_dir, 'w')
+            f.write(r.content)
+            f.close()
+        else:
+            error_msg = "the source %s can not be accessed" % source
+            print error_msg
+            return render_template('msg.html', msg=error_msg, msg_title="Error")
+
+    headers = util.get_headers(uploaded_file_dir, file_type=file_type)
+    if headers == []:
+        error_msg = "Can't parse the source file "
+        return render_template('msg.html', msg=error_msg, msg_title="Error")
+    labels = util.get_classes_as_txt(ontologies)
+    #f = open(os.path.join(DATA_DIR, "labels.txt"))
+    return render_template('editor.html', labels_txt=labels, headers=headers, callback=callback_url, file_name=original_file_name, error_msg=error_msg, warning_msg=warning_msg)
 
 
 @app.route("/get_properties")
 def get_properties():
-    concept = request.args.get('concept', default=None)
-    if concept:
-        concept = concept.strip()
-        schema_prop_path = os.path.join(DATA_DIR, 'schema-prop.json')
-        print 'schema_prop_path: %s' % schema_prop_path
-        f = open(schema_prop_path)
-        properties_j = json.loads(f.read())
-        if concept in properties_j:
-            properties = list(set(properties_j[concept]))
-            return jsonify({'properties': properties})
-    return jsonify({'properties': []})
+    # concept = request.args.get('concept', default=None)
+    # if concept:
+    #     concept = concept.strip()
+    #     schema_prop_path = os.path.join(DATA_DIR, 'schema-prop.json')
+    #     print 'schema_prop_path: %s' % schema_prop_path
+    #     f = open(schema_prop_path)
+    #     properties_j = json.loads(f.read())
+    #     if concept in properties_j:
+    #         properties = list(set(properties_j[concept]))
+    #         return jsonify({'properties': properties})
+    # return jsonify({'properties': []})
+    return jsonify({'properties': ["ddddd","eeeee"]})
 
 
 @app.route("/generate_mapping", methods=['POST'])

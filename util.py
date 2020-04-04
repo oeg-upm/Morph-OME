@@ -1,4 +1,12 @@
-import string, random
+import string
+import random
+import os
+
+
+#DATA_DIR = os.path.join(BASE_DIR, 'data')
+DATA_DIR = 'data'
+
+
 
 
 def get_random_string(length=4):
@@ -19,6 +27,33 @@ def get_headers(file_dir, file_type):
         return []
     else:
         return []
+
+
+def get_classes_as_txt(ontologies):
+    """
+    :param ontologies:
+    :return:
+    """
+    classes = []
+    for o in ontologies:
+        odir = os.path.join(DATA_DIR,o,'classes.txt')
+        classes += get_classes_from_file(odir)
+    #return classes
+    txt = ""
+    for c in classes:
+        txt += '"'+c+'", '
+    return txt
+
+
+def get_classes_from_file(odir):
+    """
+    :param odir:
+    :return:
+    """
+    f = open(odir)
+    classes = f.read().split('\n')
+    f.close()
+    return classes
 
 
 def get_headers_csv(file_dir):
