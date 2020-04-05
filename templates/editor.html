@@ -16,7 +16,7 @@
             console.log('item is chosen');
             //console.log($("#concept").val());
             console.log(ui.item.value);
-            $.get( "get_properties?concept="+ui.item.value, function( data ) {
+            $.get( "get_properties?ontologies={{ontologies_txt|safe}}", function( data ) {
               //alert( "Load was performed." );
               console.log(data['properties']);
               properties = data['properties'];

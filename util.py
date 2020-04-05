@@ -29,6 +29,18 @@ def get_headers(file_dir, file_type):
         return []
 
 
+def get_properties_as_list(ontologies):
+    """
+    :param ontologies:
+    :return:
+    """
+    properties = []
+    for o in ontologies:
+        odir = os.path.join(DATA_DIR,o,'properties.txt')
+        properties += get_classes_from_file(odir)
+    return properties
+
+
 def get_classes_as_txt(ontologies):
     """
     :param ontologies:
@@ -59,11 +71,11 @@ def get_classes_from_file(odir):
 def get_headers_csv(file_dir):
     import pandas as pd
     pcsv = pd.read_csv(file_dir, nrows=1)
-    print "pcsv: "
-    print pcsv
-    print "columns: "
-    print pcsv.columns
-    print list(pcsv.columns)
+    print("pcsv: ")
+    print(pcsv)
+    print("columns: ")
+    print(pcsv.columns)
+    print(list(pcsv.columns))
     return list(pcsv.columns)
 
 
@@ -79,14 +91,14 @@ def generate_r2rml_mappings(mapping_file_dir, file_name, entity_class, entity_co
     """
     proper_mappings_list = [single_property_mapping % (m["val"].replace('http://schema.org/', ''), m["key"].upper()) for m in mappings]
     property_column_mapping = "\n".join(proper_mappings_list)
-    print "predicate object mappings: "
-    print property_column_mapping
+    print("predicate object mappings: ")
+    print(property_column_mapping)
     table_name = file_name.upper()
     if table_name[-4:] == ".CSV":
         table_name = table_name[:-4]
     else:
         #print table_name[:-4]
-        print "Note that the filename is not terminated with .CSV"
+        print("Note that the filename is not terminated with .CSV")
         #raise Exception("the file name should ends up with .CSV ")
     mapping_content = u"""
     @prefix rr: <http://www.w3.org/ns/r2rml#> .
@@ -109,7 +121,7 @@ def generate_r2rml_mappings(mapping_file_dir, file_name, entity_class, entity_co
         %s
     .
     """ % (mapping_id, table_name, entity_class, entity_column.upper(), property_column_mapping)
-    print mapping_content
+    print(mapping_content)
     f = open(mapping_file_dir, 'w')
     f.write(mapping_content.encode('utf8'))
     f.close()

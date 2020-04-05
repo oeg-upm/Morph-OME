@@ -42,7 +42,7 @@ def editor():
     if 'callback' in request.form:
         callback_url = request.form['callback']
     else:
-        callback_url = None
+        callback_url = ""
     ontologies = request.form.getlist('ontologies')
     if len(ontologies) == 0:
         return render_template('msg.html', msg="You should select at least one ontology", msg_title="Error")
@@ -80,7 +80,7 @@ def editor():
             f.close()
         else:
             error_msg = "the source %s can not be accessed" % source
-            print error_msg
+            print(error_msg)
             return render_template('msg.html', msg=error_msg, msg_title="Error")
 
     headers = util.get_headers(uploaded_file_dir, file_type=file_type)
@@ -89,23 +89,14 @@ def editor():
         return render_template('msg.html', msg=error_msg, msg_title="Error")
     labels = util.get_classes_as_txt(ontologies)
     #f = open(os.path.join(DATA_DIR, "labels.txt"))
-    return render_template('editor.html', labels_txt=labels, headers=headers, callback=callback_url, file_name=original_file_name, error_msg=error_msg, warning_msg=warning_msg)
+    return render_template('editor.html', labels_txt=labels, ontologies_txt=",".join(ontologies), headers=headers, callback=callback_url, file_name=original_file_name, error_msg=error_msg, warning_msg=warning_msg)
 
 
 @app.route("/get_properties")
 def get_properties():
-    concept = request.args.get('concept', default=None)
-    if concept:
-        concept = concept.strip()
-        schema_prop_path = os.path.join(DATA_DIR, 'schema-prop.json')
-        print 'schema_prop_path: %s' % schema_prop_path
-        f = open(schema_prop_path)
-        properties_j = json.loads(f.read())
-        if concept in properties_j:
-            properties = list(set(properties_j[concept]))
-            return jsonify({'properties': properties})
-    return jsonify({'properties': []})
-    # return jsonify({'properties': ["ddddd","eeeee"]})
+    ontologies_txt = request.args.get('ontologies')
+    ontologies = ontologies_txt.split(',')
+    return jsonify({'properties': util.get_properties_as_list(ontologies)})
 
 
 @app.route("/generate_mapping", methods=['POST'])
@@ -131,7 +122,8 @@ def generate_mapping():
             else:
                 continue
 
-        print "mappings = ", mappings
+        print("mappings = ")
+        print(mappings)
         # Assuming the file name has at least a single . to separate the file name and the extension
         file_name_without_ext = ".".join(file_name.split('.')[:-1])
         mapping_file_name = file_name_without_ext+"-"+get_random_text()+".r2rml"
@@ -149,7 +141,7 @@ def generate_mapping():
                 if r.status_code == 200:
                     return render_template('msg.html', msg="Your mappings has been sent", msg_title="Result")
                 else:
-                    print r.content
+                    print(r.content)
                     return render_template('msg.html', msg="Error sending the mappings to :"+callback_url, msg_title="Error")
             except Exception as e:
                 print("Exception: "+str(e))
