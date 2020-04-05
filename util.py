@@ -69,14 +69,36 @@ def get_classes_from_file(odir):
 
 
 def get_headers_csv(file_dir):
-    import pandas as pd
-    pcsv = pd.read_csv(file_dir, nrows=1)
-    print("pcsv: ")
-    print(pcsv)
-    print("columns: ")
-    print(pcsv.columns)
-    print(list(pcsv.columns))
-    return list(pcsv.columns)
+    f = open(file_dir)
+    header_str = ""
+    for line in f.readlines():
+        header_str = line
+        break
+
+    header = []
+    start_q = False
+    start_idx = 0
+    print("header_string: "+header_str)
+    for idx, ch in enumerate(header_str):
+        if ch == '"' and start_q == True:
+            start_q = False
+        elif ch=='"':
+            start_q = True
+        elif ch=="," and start_q == False:
+            curr = header_str[start_idx:idx]
+            header.append(curr)
+            start_idx = idx+1
+    header.append(header_str[start_idx:])
+
+    return header
+    # import pandas as pd
+    # pcsv = pd.read_csv(file_dir, nrows=1)
+    # print("pcsv: ")
+    # print(pcsv)
+    # print("columns: ")
+    # print(pcsv.columns)
+    # print(list(pcsv.columns))
+    # return list(pcsv.columns)
 
 
 def generate_r2rml_mappings(mapping_file_dir, file_name, entity_class, entity_column, mappings):

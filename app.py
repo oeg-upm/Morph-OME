@@ -164,6 +164,7 @@ def add_ontology():
         if sourcefile.filename != "":
             filename = secure_filename(sourcefile.filename)
             uploaded_file_dir = os.path.join(UPLOAD_DIR, filename)
+            print("to save the file to: "+uploaded_file_dir)
             sourcefile.save(uploaded_file_dir)
             generate_lookup(uploaded_file_dir, request.form['name'].strip())
             return render_template('msg.html', msg="Ontology added successfully", msg_title="Success")

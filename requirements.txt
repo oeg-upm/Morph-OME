@@ -7,8 +7,6 @@ isodate==0.6.0
 itsdangerous==0.24
 Jinja2==2.11.1
 MarkupSafe==1.0
-numpy==1.15.4
-pandas==0.23.4
 pyparsing==2.4.6
 python-dateutil==2.7.3
 pytz==2018.5
