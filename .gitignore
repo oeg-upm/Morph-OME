@@ -1,6 +1,13 @@
+data/*/*.txt
+upload/*.csv
+upload/*.json
+upload/*.xml
+upload/*.rdf
+upload/*.owl
 *.csv
 *.r2rml
 .idea/
+.DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
