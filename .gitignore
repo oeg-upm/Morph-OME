@@ -4,6 +4,8 @@ upload/*.json
 upload/*.xml
 upload/*.rdf
 upload/*.owl
+upload/*.rml
+upload/*.r2rml
 *.csv
 *.r2rml
 .idea/

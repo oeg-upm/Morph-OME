@@ -101,10 +101,11 @@ def get_properties():
 
 @app.route("/generate_mapping", methods=['POST'])
 def generate_mapping():
-    if 'entity_class' in request.form and 'entity_column' in request.form and 'file_name' in request.form:
+    if 'entity_class' in request.form and 'entity_column' in request.form and 'file_name' in request.form and 'mapping_lang' in request.form:
         entity_class = request.form['entity_class']
         entity_column = request.form['entity_column']
         file_name = request.form['file_name']
+        mapping_lang = request.form['mapping_lang']
         #print "request form: "
         #print list(request.form.keys())
         mappings = []
@@ -126,9 +127,14 @@ def generate_mapping():
         print(mappings)
         # Assuming the file name has at least a single . to separate the file name and the extension
         file_name_without_ext = ".".join(file_name.split('.')[:-1])
-        mapping_file_name = file_name_without_ext+"-"+get_random_text()+".r2rml"
+        mapping_file_name = file_name_without_ext+"-"+get_random_text()+ "." + mapping_lang #".r2rml"
         mapping_file_dir = os.path.join(UPLOAD_DIR, mapping_file_name)
-        util.generate_r2rml_mappings(mapping_file_dir, file_name, entity_class, entity_column, mappings)
+        if mapping_lang == "r2rml":
+            util.generate_r2rml_mappings(mapping_file_dir, file_name, entity_class, entity_column, mappings)
+        elif mapping_lang == "rml":
+            util.generate_rml_mappings_csv(mapping_file_dir, file_name, entity_class, entity_column, mappings)
+        else:
+            return render_template('msg.html', msg="Invalid mapping language", msg_title="Error")
         f = open(mapping_file_dir)
         mapping_content = f.read()
         f.close()
