@@ -7,6 +7,7 @@ import util
 import sys
 import string
 import random
+from generate_lookup import generate_lookup
 
 app = Flask(__name__)
 
@@ -93,18 +94,18 @@ def editor():
 
 @app.route("/get_properties")
 def get_properties():
-    # concept = request.args.get('concept', default=None)
-    # if concept:
-    #     concept = concept.strip()
-    #     schema_prop_path = os.path.join(DATA_DIR, 'schema-prop.json')
-    #     print 'schema_prop_path: %s' % schema_prop_path
-    #     f = open(schema_prop_path)
-    #     properties_j = json.loads(f.read())
-    #     if concept in properties_j:
-    #         properties = list(set(properties_j[concept]))
-    #         return jsonify({'properties': properties})
-    # return jsonify({'properties': []})
-    return jsonify({'properties': ["ddddd","eeeee"]})
+    concept = request.args.get('concept', default=None)
+    if concept:
+        concept = concept.strip()
+        schema_prop_path = os.path.join(DATA_DIR, 'schema-prop.json')
+        print 'schema_prop_path: %s' % schema_prop_path
+        f = open(schema_prop_path)
+        properties_j = json.loads(f.read())
+        if concept in properties_j:
+            properties = list(set(properties_j[concept]))
+            return jsonify({'properties': properties})
+    return jsonify({'properties': []})
+    # return jsonify({'properties': ["ddddd","eeeee"]})
 
 
 @app.route("/generate_mapping", methods=['POST'])
@@ -149,7 +150,7 @@ def generate_mapping():
                     return render_template('msg.html', msg="Your mappings has been sent", msg_title="Result")
                 else:
                     print r.content
-                    return render_template('msg.html', error_msg="Error sending the mappings to :"+callback_url)
+                    return render_template('msg.html', msg="Error sending the mappings to :"+callback_url, msg_title="Error")
             except Exception as e:
                 print("Exception: "+str(e))
                 return render_template('msg.html', error_msg="Invalid callback URL :" + callback_url)
@@ -160,6 +161,25 @@ def generate_mapping():
 
 def get_random_text(n=4):
     return ''.join([random.choice(string.ascii_letters + string.digits) for _ in range(n)])
+
+
+@app.route("/add_ontology", methods=["POST"])
+def add_ontology():
+    if 'name' not in request.form:
+        return render_template('msg.html', msg="Ontology name is not passed", msg_title="Error")
+    if 'sourcefile' in request.files:
+        sourcefile = request.files['sourcefile']
+        if sourcefile.filename != "":
+            filename = secure_filename(sourcefile.filename)
+            uploaded_file_dir = os.path.join(UPLOAD_DIR, filename)
+            sourcefile.save(uploaded_file_dir)
+            generate_lookup(uploaded_file_dir, request.form['name'].strip())
+            return render_template('msg.html', msg="Ontology added successfully", msg_title="Success")
+        else:
+            print("blank source file")
+            return render_template('msg.html', msg="Ontology file is not passed", msg_title="Error")
+    else:
+        return render_template('msg.html', msg="Ontology file is not passed", msg_title="Error")
 
 
 if __name__ == '__main__':

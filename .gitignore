@@ -1,4 +1,9 @@
 data/*/*.txt
+upload/*.csv
+upload/*.json
+upload/*.xml
+upload/*.rdf
+upload/*.owl
 *.csv
 *.r2rml
 .idea/
