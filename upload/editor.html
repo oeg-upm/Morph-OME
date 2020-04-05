@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>OME</title>
+
+
+    
+    
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/semantic-ui@2.3.3/dist/semantic.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.3.3/dist/semantic.min.js"></script>
+
+</head>
+<body>
+    <div class="ui segment">
+        <a href="/">
+            <img class="ui centered  image"  src="https://github.com/ahmad88me/OME/raw/master/logo.png"/></a>
+    </div>
+    
+<form class="ui form" action="editor" method=post enctype=multipart/form-data>
+  <div class="field">
+    <label>Enter the URL of your CSV file</label>
+    <input type="url" name="source" placeholder="http://your_csv_file_url">
+  </div>
+  <div class="field">
+    <label>Upload your CSV file</label>
+    <input type="file" name="sourcefile"/>
+  </div>
+  <div class="field">
+    <label for="ontologies">Choose one or more ontologies:</label>
+    <select id="ontologies" name="ontologies" multiple>
+      
+      <option value="delta">delta</option>
+      
+      <option value="ssn">ssn</option>
+      
+    </select>
+  </div>
+
+  <button class="ui button" type="submit">Open With Editor</button>
+</form>
+
+
+</body>
+</html>
