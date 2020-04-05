@@ -47,7 +47,8 @@ def get_all_properties(g):
     q = """ select ?a 
         where{
          {?a ?b owl:ObjectProperty} UNION
-         {?a a rdf:Property }
+         {?a a rdf:Property } UNION
+         {?a ?b owl:DatatypeProperty}
         }
     """
     result = g.query(q)
