@@ -6,6 +6,7 @@ upload/*.rdf
 upload/*.owl
 upload/*.rml
 upload/*.r2rml
+upload/*.yarrrml
 *.csv
 *.r2rml
 .idea/

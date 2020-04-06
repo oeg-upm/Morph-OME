@@ -107,11 +107,11 @@ def generate_r2rml_mappings(mapping_file_dir, file_name, entity_class, entity_co
     mapping_id = get_random_string(10)
     single_property_mapping = u"""
         rr:predicateObjectMap [
-          rr:predicateMap [ rr:constant schema:%s ];
+          rr:predicateMap [ rr:constant <%s> ];
           rr:objectMap    [ rr:termType rr:Literal; rr:column "\\"%s\\""; ];
         ];
     """
-    proper_mappings_list = [single_property_mapping % (m["val"].replace('http://schema.org/', ''), m["key"].upper()) for m in mappings]
+    proper_mappings_list = [single_property_mapping % (m["val"], m["key"].upper()) for m in mappings]
     property_column_mapping = "\n".join(proper_mappings_list)
     print("predicate object mappings: ")
     print(property_column_mapping)
@@ -123,25 +123,25 @@ def generate_r2rml_mappings(mapping_file_dir, file_name, entity_class, entity_co
         print("Note that the filename is not terminated with .CSV")
         #raise Exception("the file name should ends up with .CSV ")
     mapping_content = u"""
-    @prefix rr: <http://www.w3.org/ns/r2rml#> .
-    @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-    @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-    @prefix dcat: <http://www.w3.org/ns/dcat#> .
-    @prefix dct: <http://purl.org/dc/terms/> .
-    @prefix mpv: <http://mappingpedia.linkeddata.es/vocab/> .
-    @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
-    @prefix schema: <http://schema.org/> .
-    @base <http://mappingpedia.linkeddata.es/resource/> .
-    <%s>
-        rr:logicalTable [
-            rr:tableName  "\\"%s\\""
-        ];
-        rr:subjectMap [
-            a rr:Subject; rr:termType rr:IRI; rr:class schema:%s;
-            rr:column "\\"%s\\"";
-        ];
-        %s
-    .
+@prefix rr: <http://www.w3.org/ns/r2rml#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix dct: <http://purl.org/dc/terms/> .
+@prefix mpv: <http://mappingpedia.linkeddata.es/vocab/> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix schema: <http://schema.org/> .
+@base <http://mappingpedia.linkeddata.es/resource/> .
+<%s>
+    rr:logicalTable [
+        rr:tableName  "\\"%s\\""
+    ];
+    rr:subjectMap [
+        a rr:Subject; rr:termType rr:IRI; rr:class <%s>;
+        rr:column "\\"%s\\"";
+    ];
+    %s
+.
     """ % (mapping_id, table_name, entity_class, entity_column.upper(), property_column_mapping)
     print(mapping_content)
     f = open(mapping_file_dir, 'w')
@@ -149,45 +149,43 @@ def generate_r2rml_mappings(mapping_file_dir, file_name, entity_class, entity_co
     f.close()
 
 
-# def generate_r2rml_mappings(mapping_file_dir, file_name, entity_class, entity_column, mappings):
-# def generate_rml_mappings(file_name, entity_class, entity_column, mappings, file_url):
 def generate_rml_mappings_csv(mapping_file_dir, file_name, entity_class, entity_column, mappings):
     mapping_id = get_random_string(10)
     single_property_mapping = u"""
         rr:predicateObjectMap [
-          rr:predicate %s;
+          rr:predicate <%s>;
           rr:objectMap    [ rml:reference "%s" ]
         ];
     """
-    proper_mappings_list = [single_property_mapping % (m["val"].replace('http://schema.org/',''), m["key"]) for m in mappings]
+    proper_mappings_list = [single_property_mapping % (m["val"], m["key"]) for m in mappings]
     property_column_mapping = "\n".join(proper_mappings_list)
     mapping_file = u"""
-        @prefix rr: <http://www.w3.org/ns/r2rml#>.
-        @prefix rml: <http://semweb.mmlab.be/ns/rml#> .
-        @prefix ql: <http://semweb.mmlab.be/ns/ql#> .
-        @prefix mail: <http://example.com/mail#>.
-        @prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
-        @prefix ex: <http://www.example.com/> .
-        @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-        @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
-        @prefix transit: <http://vocab.org/transit/terms/> .
-        @prefix wgs84_pos: <http://www.w3.org/2003/01/geo/wgs84_pos#>.
-        @prefix schema: <http://schema.org/>.
-        @prefix gn: <http://www.geonames.org/ontology#>.
-        @prefix geosp: <http://www.telegraphis.net/ontology/geography/geography#> .
-        @base <http://mappingpedia.linkeddata.es/resource/> .
-        <%s>
-        rml:logicalSource [
-            rml:source  "%s";
-            rml:referenceFormulation ql:CSV
+@prefix rr: <http://www.w3.org/ns/r2rml#>.
+@prefix rml: <http://semweb.mmlab.be/ns/rml#> .
+@prefix ql: <http://semweb.mmlab.be/ns/ql#> .
+@prefix mail: <http://example.com/mail#>.
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#>.
+@prefix ex: <http://www.example.com/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix transit: <http://vocab.org/transit/terms/> .
+@prefix wgs84_pos: <http://www.w3.org/2003/01/geo/wgs84_pos#>.
+@prefix schema: <http://schema.org/>.
+@prefix gn: <http://www.geonames.org/ontology#>.
+@prefix geosp: <http://www.telegraphis.net/ontology/geography/geography#> .
+@base <http://mappingpedia.linkeddata.es/resource/> .
+<%s>
+rml:logicalSource [
+    rml:source  "%s";
+    rml:referenceFormulation ql:CSV
 
-        ];
-        rr:subjectMap [
-            rml:reference "%s";
-            rr:class schema:%s
-        ];
-        %s
-    .
+];
+rr:subjectMap [
+    rml:reference "%s";
+    rr:class <%s>
+];
+%s
+.
     """ % (mapping_id, file_name, entity_column, entity_class, property_column_mapping)
     print mapping_file
     mapping_file_path = mapping_file_dir
@@ -221,3 +219,38 @@ def get_json_path(j):
         #     print j[k]
         #     print type(j[k])
     return {"max_no": max_no, "json_path": json_path}
+
+
+def generate_yarrrml_mappings_csv(mapping_file_dir, file_name, entity_class, entity_column, mappings):
+    mapping_id = get_random_string(10)
+    single_property_mapping = u"""            - [%s, %s]"""
+    concept_name = entity_class.split('/')[-1].split('#')[-1]
+    proper_mappings_list = [single_property_mapping % (m["val"], m["key"]) for m in mappings]
+    class_as_po = single_property_mapping % ("a", entity_class)
+    proper_mappings_list.append(class_as_po)
+    property_column_mapping = "\n".join(proper_mappings_list)
+    mapping_file = u"""
+
+prefixes:
+    ex: http://www.example.com/
+    e: http://myontology.com/
+    base: http://mappingpedia.linkeddata.es/resource/
+    dbo: http://dbpedia.org/ontology/
+
+mappings:
+    %s:
+        sources:
+            - ['%s~csv']
+        s: base:$(%s) 
+        po:
+%s
+    """ % (concept_name, file_name, entity_column, property_column_mapping)
+    print mapping_file
+    mapping_file_path = mapping_file_dir
+    # mapping_file_path = os.path.join(BASE_DIR, 'local', mapping_id+'.rml.ttl')
+    print 'mapping file path:'
+    print mapping_file_path
+    f = open(mapping_file_path, 'w')
+    f.write(mapping_file.encode('utf8'))
+    f.close()
+    return mapping_file_path

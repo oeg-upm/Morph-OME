@@ -133,6 +133,8 @@ def generate_mapping():
             util.generate_r2rml_mappings(mapping_file_dir, file_name, entity_class, entity_column, mappings)
         elif mapping_lang == "rml":
             util.generate_rml_mappings_csv(mapping_file_dir, file_name, entity_class, entity_column, mappings)
+        elif mapping_lang == "yarrrml":
+            util.generate_yarrrml_mappings_csv(mapping_file_dir, file_name, entity_class, entity_column, mappings)
         else:
             return render_template('msg.html', msg="Invalid mapping language", msg_title="Error")
         f = open(mapping_file_dir)
