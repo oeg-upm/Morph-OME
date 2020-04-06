@@ -3,11 +3,6 @@
 An Online Mapping Editor to generate R2RML (and other formats) without writing a single line.
 
 
-# Example
-One you run the application,
-`https://petitions.gov.je/petitions.csv`
-
-
 # Run with Docker
 1. `sh run_docker.sh`
 2. In the browser visit `http://127.0.0.1:5000`
@@ -20,6 +15,11 @@ One you run the application,
 4. Install requirements ``` pip install -r requirements.txt ```
 5. Run the application ``` python app.py ```
 6. Open the browser to the url [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
+
+
+# Example
+One you run the application,
+`https://petitions.gov.je/petitions.csv`
 
 
 # Screenshot
