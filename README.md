@@ -10,11 +10,13 @@ An Online Mapping Editor to generate R2RML (and other formats) without writing a
 
 # How to install it locally
 1. Create virtual environment [here](https://docs.python-guide.org/dev/virtualenvs/) (recommended by not required) e.g. ```virtualenv -p /usr/bin/python2.7 .venv```
-2. Access the virtual environment using `source .venv/bin/activate`
-3. Install pip [here](https://pip.pypa.io/en/stable/installing/)
-4. Install requirements ``` pip install -r requirements.txt ```
-5. Run the application ``` python app.py ```
-6. Open the browser to the url [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
+1. Access the virtual environment using `source .venv/bin/activate`
+1. Install pip [here](https://pip.pypa.io/en/stable/installing/)
+1. Install requirements ``` pip install -r requirements.txt ```
+1. Set `TADA_HOST` to the url of the pytada_hdt_entity host. For example (`export TADA_HOST="http://127.0.0.1:5001/`)
+1. Run the application ``` python app.py ```
+1. Open the browser to the url [http://127.0.0.1:5000/](http://127.0.0.1:5000/)
+
 
 
 # Example

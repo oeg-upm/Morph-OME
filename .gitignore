@@ -7,6 +7,7 @@ upload/*.owl
 upload/*.rml
 upload/*.r2rml
 upload/*.yarrrml
+upload/*.nt
 *.csv
 *.r2rml
 .idea/

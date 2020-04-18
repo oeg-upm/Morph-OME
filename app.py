@@ -8,6 +8,25 @@ import sys
 import string
 import random
 from generate_lookup import generate_lookup
+import logging
+import io
+import annotator
+
+
+def set_config(logger, logdir=""):
+    if logdir != "":
+        handler = logging.FileHandler(logdir)
+    else:
+        handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.DEBUG)
+    return logger
+
+
+logger = logging.getLogger(__name__)
+set_config(logger)
 
 app = Flask(__name__)
 
@@ -31,6 +50,37 @@ def home():
                 datasets.append(f)
     print(datasets)
     return render_template('index.html', datasets=datasets)
+
+
+@app.route("/predict", methods=['POST'])
+def predict():
+    if 'file_name' in request.form:
+        fname = request.form['file_name']
+        logger.debug('predict> file_name: '+fname)
+        source_dir = os.path.join(UPLOAD_DIR, fname)
+        logger.debug('predict> source_dir: '+source_dir)
+        if os.path.exists(source_dir):
+            logger.debug("predict> exists"+source_dir)
+            subject_column_name = None
+            if 'subject' in request.form:
+                logger.debug("predict> subject in form" + request.form['subject'])
+                if request.form['subject'].strip() != "":
+                    subject_column_name = request.form['subject']
+                    logger.debug("predict> subject in 2" + subject_column_name)
+                    headers = util.get_headers_csv(source_dir)
+                    subject_col_id = None
+                    for i, h in enumerate(headers):
+                        if h == subject_column_name:
+                            subject_col_id = i
+
+                    if subject_col_id is None:
+                        return jsonify({'error': 'The provided subject header is not found'}), 400
+                    else:
+                        entities = annotator.annotate_subject(source_dir, subject_col_id, 3)
+                        return jsonify({'entities': entities})
+        else:
+            jsonify({'error': 'The provided file does not exist on the server'}), 404
+    return jsonify({'error': 'missing values'}), 400
 
 
 @app.route("/editor", methods=['POST'])
@@ -58,7 +108,8 @@ def editor():
             if sourcefile.filename != "":
                 original_file_name = sourcefile.filename
                 filename = secure_filename(sourcefile.filename)
-                uploaded_file_dir = os.path.join(UPLOAD_DIR, filename)
+                fname = util.get_random_string(4) + "-" + filename
+                uploaded_file_dir = os.path.join(UPLOAD_DIR, fname)
                 sourcefile.save(uploaded_file_dir)
                 uploaded = True
             else:
@@ -89,7 +140,7 @@ def editor():
         return render_template('msg.html', msg=error_msg, msg_title="Error")
     labels = util.get_classes_as_txt(ontologies)
     #f = open(os.path.join(DATA_DIR, "labels.txt"))
-    return render_template('editor.html', labels_txt=labels, ontologies_txt=",".join(ontologies), headers=headers, callback=callback_url, file_name=original_file_name, error_msg=error_msg, warning_msg=warning_msg)
+    return render_template('editor.html', labels_txt=labels, ontologies_txt=",".join(ontologies), headers=headers, callback=callback_url, file_name=fname, error_msg=error_msg, warning_msg=warning_msg)
 
 
 @app.route("/get_properties")

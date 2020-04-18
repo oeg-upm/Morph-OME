@@ -5,29 +5,9 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
     <script>
- var properties = ["aaa", "bbb", "ccc"];
-  $( function() {
-    var labels = [
-        {{labels_txt|safe}}
-    ];
-    $( "#concept" ).autocomplete({
-          source: labels,
-          select: function( event, ui ) {
-            console.log('item is chosen');
-            //console.log($("#concept").val());
-            console.log(ui.item.value);
-            $.get( "get_properties?ontologies={{ontologies_txt|safe}}", function( data ) {
-              //alert( "Load was performed." );
-              console.log(data['properties']);
-              properties = data['properties'];
-              console.log(properties);
-              $( ".property" ).autocomplete({
-                source: properties
-              });// auto complete
-            });//get
-           }// select function
-    });//auto complete
-} );
+
+
+
 
     </script>
 
@@ -60,26 +40,28 @@
         <!--<label>Format</label>-->
         <!--<input type="text" name="format" value="csv"readonly>-->
     <!--</div>-->
-    <input type="text" name="file_name" value="{{file_name}}">
+    <input type="text" name="file_name" value="{{file_name}}" id="file_name" readonly>
     <input type="hidden" name="format" value="csv">
     <input type="hidden" name="callback" value="{{callback}}">
 
-    <div class="ui-widget field">
-        <label for="concept">Choose the concept of this file: </label>
-        <input id="concept" name="entity_class"/>
-    </div>
-    <hr>
     <div class="field">
         <label for="entity_column">Entity Column (primary key)</label>
-
         <select class="ui dropdown" name="entity_column" id="entity_column">
 
+            <option disabled selected value> -- select the subject column -- </option>
             {%for header in headers%}
             <option value="{{header}}">{{header}}</option>
             {%endfor%}
 
         </select>
     </div>
+
+    <div class="ui-widget field">
+        <label for="concept">Choose the concept of this file: </label>
+        <input id="concept" name="entity_class"/>
+    </div>
+    <hr>
+
 
     <table class="ui single line table ">
         <thead>
@@ -118,6 +100,79 @@
 
     <button type="submit" class="fluid ui orange button">Generate Mappings</button>
 </form>
+
+
+<script>
+var predicted_classes= new Array(0);
+
+var properties = ["aaa", "bbb", "ccc"];
+var labels = [
+        {{labels_txt|safe}}
+    ];
+  $( function() {
+
+    $( "#concept" ).autocomplete({
+          source: labels,
+          select: function( event, ui ) {
+            console.log('item is chosen');
+            //console.log($("#concept").val());
+            console.log(ui.item.value);
+            $.get( "get_properties?ontologies={{ontologies_txt|safe}}", function( data ) {
+              //alert( "Load was performed." );
+              console.log(data['properties']);
+              properties = data['properties'];
+              console.log(properties);
+              $( ".property" ).autocomplete({
+                source: properties
+              });// auto complete property
+            });//get
+           }, // select function
+           response: function (event, ui){
+//                for(var i=0;i<predicted_classes.length;i++){
+                for(var i=predicted_classes.length-1;i>=0;i--){
+                    ui.content.unshift(predicted_classes[i]);
+                }
+                console.log('updated');
+                console.log(ui.content);
+           }, // response function
+    });//auto complete
+} );
+
+
+
+
+
+$("#entity_column").change(function (){
+    var subject_header = this.value;
+    var j
+    console.log(subject_header);
+    console.log($("#file_name").val());
+    var file_name = $("#file_name").val();
+    $.ajax({
+      type: "POST",
+      url: "predict",
+      data: {"subject": subject_header, "file_name":file_name},
+    })
+    .done(function(data){
+        console.log('success!');
+        console.log(data);
+        predicted_classes_list=data['entities']
+        console.log('predicted_classes_list');
+        console.log(predicted_classes_list);
+        predicted_classes= new Array(0);
+        for(var i=0;i<predicted_classes_list.length;i++){
+            j={'label': "(predicted) "+predicted_classes_list[i], 'value': predicted_classes_list[i]}
+            predicted_classes.push(j)
+        }
+        console.log('predicted classes j')
+        console.log(predicted_classes)
+    });
+});
+
+
+
+</script>
+
 
 {%endblock%}
 

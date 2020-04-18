@@ -44,7 +44,9 @@ def get_all_properties(g):
     :param g:
     :return:
     """
-    q = """ select ?a 
+    q = """
+    PREFIX owl: <http://www.w3.org/2002/07/owl#>
+    select ?a 
         where{
          {?a ?b owl:ObjectProperty} UNION
          {?a a rdf:Property } UNION
@@ -63,7 +65,9 @@ def get_all_classes(g):
     :param g:
     :return:
     """
-    q = """select distinct ?class
+    q = """
+    PREFIX owl: <http://www.w3.org/2002/07/owl#>
+    select distinct ?class
         where{
             {?class rdf:type rdfs:Class} UNION {?class rdf:type owl:Class} .
         }
