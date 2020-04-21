@@ -2,7 +2,11 @@ import requests
 import os
 import io
 
-TADA_HOST = os.environ['TADA_HOST']
+
+try:
+    TADA_HOST = os.environ['TADA_HOST']
+except Exception as e:
+    TADA_HOST = ''
 
 
 def annotate_subject(source_dir, subject_col_id, top_k=3):
