@@ -93,7 +93,7 @@ def build_property_lookup(dataset_name,properties_fdir):
     """
     print("build_property_lookup> dataset_name: "+dataset_name)
     properties = util.get_properties_as_list([dataset_name])
-    start_idx = predict_base_URL(properties)
+    # start_idx = predict_base_URL(properties)
     lookup_name = 'lookup'
     lookup_folder_dir = os.path.join(DATA_DIR,dataset_name,lookup_name)
     if not os.path.exists(lookup_folder_dir):
@@ -101,7 +101,8 @@ def build_property_lookup(dataset_name,properties_fdir):
     # for start in string.ascii_lowercase:
     #     start_dir = os.path.join(lookup_folder_dir, start+".txt")
     for p in properties:
-        p_name = p[start_idx:]
+        # p_name = p[start_idx:]
+        p_name = p.split('/')[-1].split('#')[-1]
         if len(p_name) == 0:
             continue
         # print("pname: <"+p_name+">")
@@ -115,40 +116,40 @@ def write_lookup_for(base_dir, letter, property_uri):
     f.close()
 
 
-def predict_base_URL(uris, checks=20, restrictive=True):
-    """
-    :param uris: a list of strings, each string is a URI
-    :param checks: the number of checks to perform
-    :param restrictive: if true, it will take the highest stop_idx instead of the most common
-    :return:
-    """
-    upper = uris[:len(uris)/2]
-    lower = uris[len(uris)/2:]
-    stop_idx = []
-    for u in upper[:checks]:
-        for l in lower[:checks]:
-            if u == l:
-                continue
-            for i in range(min(len(u),len(l))):
-                if u[i] != l[i]:
-                    # print("-------")
-                    # print("u: "+u)
-                    # print("l: "+l)
-                    # print(i)
-                    stop_idx.append(i)
-                    break
-    if restrictive:
-        max_stop_idx = min(stop_idx)
-        print("predicted_base: "+upper[0][:max_stop_idx])
-        return max_stop_idx
-    else:
-        c = Counter(stop_idx)
-        max_counts = 0
-        idx_of_max = 0
-        for k in c:
-            if c[k] > max_counts:
-                idx_of_max = k
-                max_counts = c[k]
-        return idx_of_max
+# def predict_base_URL(uris, checks=20, restrictive=True):
+#     """
+#     :param uris: a list of strings, each string is a URI
+#     :param checks: the number of checks to perform
+#     :param restrictive: if true, it will take the highest stop_idx instead of the most common
+#     :return:
+#     """
+#     upper = uris[:len(uris)/2]
+#     lower = uris[len(uris)/2:]
+#     stop_idx = []
+#     for u in upper[:checks]:
+#         for l in lower[:checks]:
+#             if u == l:
+#                 continue
+#             for i in range(min(len(u),len(l))):
+#                 if u[i] != l[i]:
+#                     # print("-------")
+#                     # print("u: "+u)
+#                     # print("l: "+l)
+#                     # print(i)
+#                     stop_idx.append(i)
+#                     break
+#     if restrictive:
+#         max_stop_idx = min(stop_idx)
+#         print("predicted_base: "+upper[0][:max_stop_idx])
+#         return max_stop_idx
+#     else:
+#         c = Counter(stop_idx)
+#         max_counts = 0
+#         idx_of_max = 0
+#         for k in c:
+#             if c[k] > max_counts:
+#                 idx_of_max = k
+#                 max_counts = c[k]
+#         return idx_of_max
 
 
