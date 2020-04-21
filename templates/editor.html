@@ -117,7 +117,7 @@ var labels = [
             console.log(ui.item.value);
             //fetch_properties();
             predict_all_properties();
-            add_predicted_properties();
+            //add_predicted_properties();
            }, // select function
            response: function (event, ui){
                 for(var i=predicted_classes.length-1;i>=0;i--){
@@ -158,8 +158,11 @@ $("#entity_column").change(function (){
         console.log('predicted classes j')
         console.log(predicted_classes)
         console.log('to call predict all')
+    })
+    .always(function(data){
         $("#progressbar").hide(progress_speed);
-    });
+    })
+    ;
 });
 
   $( function() {
@@ -244,9 +247,13 @@ function predict_all_properties(){
                     console.log(data)
                     console.log(data["cols_properties"])
                     cols_properties = data["cols_properties"]
-                    //add_predicted_properties()
-                    $("#progressbar").hide(progress_speed);
-                });
+                    add_predicted_properties()
+                })
+                .always(function(data){
+                   $("#progressbar").hide(progress_speed);
+
+                })
+                ;
 }
 
 
