@@ -1,8 +1,5 @@
 {% extends "base.html" %}
 {%block head%}
-<!--<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">-->
-<!--<script src="https://code.jquery.com/jquery-1.12.4.js"></script>-->
-<!--<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>-->
 
 
 {%endblock%}
@@ -105,8 +102,6 @@ var subject_header;
 var cols_properties = [];
 var predicted_classes= new Array(0);
 var the_file_name;
-//var properties = [] ;
-//var properties = ["aaa", "bbb", "ccc"];
 
 var labels = [
         {{labels_txt|safe}}
@@ -125,7 +120,6 @@ var labels = [
             add_predicted_properties();
            }, // select function
            response: function (event, ui){
-//                for(var i=0;i<predicted_classes.length;i++){
                 for(var i=predicted_classes.length-1;i>=0;i--){
                     ui.content.unshift(predicted_classes[i]);
                 }
@@ -164,20 +158,6 @@ $("#entity_column").change(function (){
         console.log('predicted classes j')
         console.log(predicted_classes)
         console.log('to call predict all')
-        /*predict_all_properties();
-            console.log("now is sending the predict properties")
-               $.ajax({
-                  type: "POST",
-                  url: "/predict_properties",
-                  data: {"subject": subject_header, "file_name":file_name},
-                }).done(function(data){
-                    console.log("cols_properties pairs:")
-                    console.log(data["cols_properties"])
-                    cols_properties = data["cols_properties"]
-                    add_predicted_properties()
-                    $("#progressbar").hide(progress_speed);
-                });
-          */
         $("#progressbar").hide(progress_speed);
     });
 });
@@ -195,7 +175,7 @@ $( ".property" ).autocomplete({
         var prop_name, parts
         if(request.term[0] in cache){
             console.log('cached')
-            console.log(cache[request.term[0]])
+            //console.log(cache[request.term[0]])
             for(var i=0;i<cache[request.term[0]].length;i++){
                 parts = cache[request.term[0]][i].split("/")
                 prop_name = parts[parts.length-1]
@@ -209,7 +189,7 @@ $( ".property" ).autocomplete({
                 }
             }
             console.log('filtered')
-            console.log(filtered);
+            //console.log(filtered);
             response(filtered);
             //response(cache[request.term[0]])
         }
@@ -249,21 +229,6 @@ function add_predicted_properties(){
     });
 }
 
-function set_general_properties(){
-    $( ".property" ).autocomplete( "option", "source", properties );
-}
-
-/*
-function fetch_properties(){
-                $.get( "get_properties?ontologies={{ontologies_txt|safe}}", function( data ) {
-              //alert( "Load was performed." );
-              //console.log(data['properties']);
-              properties = data['properties'];
-              console.log(properties);
-              set_general_properties();
-        });
-}
-*/
 
 function predict_all_properties(){
                console.log("now is sending the predict properties")
