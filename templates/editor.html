@@ -1,15 +1,9 @@
 {% extends "base.html" %}
 {%block head%}
-    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<!--<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">-->
+<!--<script src="https://code.jquery.com/jquery-1.12.4.js"></script>-->
+<!--<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>-->
 
-    <script>
-
-
-
-
-    </script>
 
 {%endblock%}
 
@@ -37,8 +31,8 @@
 
     <!--<p>detected iterator: {{iterator}}</p>-->
     <!--<div class="field">-->
-        <!--<label>Format</label>-->
-        <!--<input type="text" name="format" value="csv"readonly>-->
+    <!--<label>Format</label>-->
+    <!--<input type="text" name="format" value="csv"readonly>-->
     <!--</div>-->
     <input type="text" name="file_name" value="{{file_name}}" id="file_name" readonly>
     <input type="hidden" name="format" value="csv">
@@ -48,7 +42,7 @@
         <label for="entity_column">Entity Column (primary key)</label>
         <select class="ui dropdown" name="entity_column" id="entity_column">
 
-            <option disabled selected value> -- select the subject column -- </option>
+            <option disabled selected value> -- select the subject column --</option>
             {%for header in headers%}
             <option value="{{header}}">{{header}}</option>
             {%endfor%}
@@ -60,6 +54,8 @@
         <label for="concept">Choose the concept of this file: </label>
         <input id="concept" name="entity_class"/>
     </div>
+
+    <div id="progressbar"></div>
     <hr>
 
 
@@ -84,18 +80,16 @@
     <br>
 
 
-
-
-<div class="ui form">
-  <div class="field">
-    <label>Mapping Language</label>
-    <select class="ui search dropdown" form="editor-form" name="mapping_lang">
-      <option value="r2rml">R2RML</option>
-      <option value="rml">RML</option>
-      <option value="yarrrml">YARRRML</option>
- </select>
-  </div>
-</div>
+    <div class="ui form">
+        <div class="field">
+            <label>Mapping Language</label>
+            <select class="ui search dropdown" form="editor-form" name="mapping_lang">
+                <option value="r2rml">R2RML</option>
+                <option value="rml">RML</option>
+                <option value="yarrrml">YARRRML</option>
+            </select>
+        </div>
+    </div>
 
 
     <button type="submit" class="fluid ui orange button">Generate Mappings</button>
@@ -103,12 +97,20 @@
 
 
 <script>
-var predicted_classes= new Array(0);
 
-var properties = ["aaa", "bbb", "ccc"];
+$("#progressbar").hide();
+var cache = {};
+var progress_speed=500;
+var subject_header;
+var cols_properties = [];
+var predicted_classes= new Array(0);
+//var properties = [] ;
+//var properties = ["aaa", "bbb", "ccc"];
+
 var labels = [
         {{labels_txt|safe}}
-    ];
+];
+
   $( function() {
 
     $( "#concept" ).autocomplete({
@@ -117,15 +119,8 @@ var labels = [
             console.log('item is chosen');
             //console.log($("#concept").val());
             console.log(ui.item.value);
-            $.get( "get_properties?ontologies={{ontologies_txt|safe}}", function( data ) {
-              //alert( "Load was performed." );
-              console.log(data['properties']);
-              properties = data['properties'];
-              console.log(properties);
-              $( ".property" ).autocomplete({
-                source: properties
-              });// auto complete property
-            });//get
+            //fetch_properties();
+            //predict_properties();
            }, // select function
            response: function (event, ui){
 //                for(var i=0;i<predicted_classes.length;i++){
@@ -141,16 +136,16 @@ var labels = [
 
 
 
-
 $("#entity_column").change(function (){
-    var subject_header = this.value;
+    $("#progressbar").show(progress_speed);
+    subject_header = this.value;
     var j
     console.log(subject_header);
     console.log($("#file_name").val());
     var file_name = $("#file_name").val();
     $.ajax({
       type: "POST",
-      url: "predict",
+      url: "predict_subject",
       data: {"subject": subject_header, "file_name":file_name},
     })
     .done(function(data){
@@ -166,12 +161,110 @@ $("#entity_column").change(function (){
         }
         console.log('predicted classes j')
         console.log(predicted_classes)
+        console.log('to call predict all')
+        /*predict_all_properties();
+            console.log("now is sending the predict properties")
+               $.ajax({
+                  type: "POST",
+                  url: "/predict_properties",
+                  data: {"subject": subject_header, "file_name":file_name},
+                }).done(function(data){
+                    console.log("cols_properties pairs:")
+                    console.log(data["cols_properties"])
+                    cols_properties = data["cols_properties"]
+                    add_predicted_properties()
+                    $("#progressbar").hide(progress_speed);
+                });
+          */
+        $("#progressbar").hide(progress_speed);
     });
 });
+
+  $( function() {
+    $( "#progressbar" ).progressbar({
+      value: false
+    });
+   });
+
+$( ".property" ).autocomplete({
+    minLength: 1,
+    source: function(request, response){
+        if(request.term[0] in cache){
+            response(cache[request.term[0]])
+        }
+        else{
+            $.ajax({
+              url: "get_properties_autocomplete",
+              data: {"term": request.term, "ontologies": "{{ontologies_txt}}"},
+              success: function(data, textStatus, jqXHR){
+                    console.log("success!");
+                    console.log(data["properties"]);
+                    response(data["properties"]);
+              },
+            });
+        }
+    }, // source function
+});// auto complete property
+
+function add_predicted_properties(){
+    $('.property').each(function(index, obj){
+        console.log("obj: ")
+        console.log(obj)
+        console.log("for property");
+        console.log(index);
+        var pair = cols_properties[index];
+        console.log(pair);
+        var cand_props = pair["properties"];
+        $(this).on( "autocompleteresponse", function( event, ui ) {
+                for(var i=cand_props.length-1;i>=0;i--){
+                    ui.content.unshift(cand_props[i]);
+                }
+                console.log('cand_props updated');
+                console.log(ui.content);
+        } );
+
+    });
+}
+
+function set_general_properties(){
+    $( ".property" ).autocomplete( "option", "source", properties );
+}
+
+function fetch_properties(){
+                $.get( "get_properties?ontologies={{ontologies_txt|safe}}", function( data ) {
+              //alert( "Load was performed." );
+              //console.log(data['properties']);
+              properties = data['properties'];
+              console.log(properties);
+              set_general_properties();
+        });
+}
+
+function predict_properties(){
+               console.log("now is sending the predict properties")
+                $.ajax({
+                  type: "POST",
+                  url: "/predict_properties",
+                  data: {"subject": subject_header, "file_name":file_name, "k":3},
+                }).done(function(data){
+                    console.log("cols_properties pairs:")
+                    console.log(data["cols_properties"])
+                    cols_properties = data["cols_properties"]
+                    //add_predicted_properties()
+                    $("#progressbar").hide(progress_speed);
+                });
+}
 
 
 
 </script>
+
+<style>
+  #progressbar .ui-progressbar-value {
+    background-color: #FFA500;
+  }
+
+</style>
 
 
 {%endblock%}

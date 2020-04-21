@@ -7,8 +7,6 @@ import os
 DATA_DIR = 'data'
 
 
-
-
 def get_random_string(length=4):
     return ''.join(random.choice(string.lowercase) for i in range(length))
 
@@ -27,45 +25,6 @@ def get_headers(file_dir, file_type):
         return []
     else:
         return []
-
-
-def get_properties_as_list(ontologies):
-    """
-    :param ontologies:
-    :return:
-    """
-    properties = []
-    for o in ontologies:
-        odir = os.path.join(DATA_DIR,o,'properties.txt')
-        properties += get_classes_from_file(odir)
-    return properties
-
-
-def get_classes_as_txt(ontologies):
-    """
-    :param ontologies:
-    :return:
-    """
-    classes = []
-    for o in ontologies:
-        odir = os.path.join(DATA_DIR,o,'classes.txt')
-        classes += get_classes_from_file(odir)
-    #return classes
-    txt = ""
-    for c in classes:
-        txt += '"'+c+'", '
-    return txt
-
-
-def get_classes_from_file(odir):
-    """
-    :param odir:
-    :return:
-    """
-    f = open(odir)
-    classes = f.read().split('\n')
-    f.close()
-    return classes
 
 
 def get_headers_csv(file_dir):
@@ -91,14 +50,6 @@ def get_headers_csv(file_dir):
     header.append(header_str[start_idx:])
 
     return header
-    # import pandas as pd
-    # pcsv = pd.read_csv(file_dir, nrows=1)
-    # print("pcsv: ")
-    # print(pcsv)
-    # print("columns: ")
-    # print(pcsv.columns)
-    # print(list(pcsv.columns))
-    # return list(pcsv.columns)
 
 
 def generate_r2rml_mappings(mapping_file_dir, file_name, entity_class, entity_column, mappings):
@@ -254,3 +205,42 @@ mappings:
     f.write(mapping_file.encode('utf8'))
     f.close()
     return mapping_file_path
+
+
+def get_classes_from_file(odir):
+    """
+    :param odir:
+    :return:
+    """
+    f = open(odir)
+    classes = f.read().split('\n')
+    f.close()
+    return classes
+
+
+def get_properties_as_list(ontologies):
+    """
+    :param ontologies:
+    :return:
+    """
+    properties = []
+    for o in ontologies:
+        odir = os.path.join(DATA_DIR, o, 'properties.txt')
+        properties += get_classes_from_file(odir)
+    return properties
+
+
+def get_classes_as_txt(ontologies):
+    """
+    :param ontologies:
+    :return:
+    """
+    classes = []
+    for o in ontologies:
+        odir = os.path.join(DATA_DIR, o, 'classes.txt')
+        classes += get_classes_from_file(odir)
+    # return classes
+    txt = ""
+    for c in classes:
+        txt += '"' + c + '", '
+    return txt
