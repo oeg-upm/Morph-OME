@@ -1,13 +1,6 @@
-data/*/*.txt
-upload/*.csv
-upload/*.json
-upload/*.xml
-upload/*.rdf
-upload/*.owl
-upload/*.rml
-upload/*.r2rml
-upload/*.yarrrml
-upload/*.nt
+data/*
+upload/*
+
 *.csv
 *.r2rml
 .idea/
