@@ -104,6 +104,7 @@ var progress_speed=500;
 var subject_header;
 var cols_properties = [];
 var predicted_classes= new Array(0);
+var the_file_name;
 //var properties = [] ;
 //var properties = ["aaa", "bbb", "ccc"];
 
@@ -120,7 +121,8 @@ var labels = [
             //console.log($("#concept").val());
             console.log(ui.item.value);
             //fetch_properties();
-            //predict_properties();
+            predict_all_properties();
+            add_predicted_properties();
            }, // select function
            response: function (event, ui){
 //                for(var i=0;i<predicted_classes.length;i++){
@@ -142,15 +144,15 @@ $("#entity_column").change(function (){
     var j
     console.log(subject_header);
     console.log($("#file_name").val());
-    var file_name = $("#file_name").val();
+    the_file_name = $("#file_name").val();
     $.ajax({
       type: "POST",
       url: "predict_subject",
-      data: {"subject": subject_header, "file_name":file_name},
+      data: {"subject": subject_header, "file_name":the_file_name},
     })
     .done(function(data){
-        console.log('success!');
-        console.log(data);
+        //console.log('success!');
+        //console.log(data);
         predicted_classes_list=data['entities']
         console.log('predicted_classes_list');
         console.log(predicted_classes_list);
@@ -189,16 +191,37 @@ $("#entity_column").change(function (){
 $( ".property" ).autocomplete({
     minLength: 1,
     source: function(request, response){
+        var filtered = []
+        var prop_name, parts
         if(request.term[0] in cache){
-            response(cache[request.term[0]])
+            console.log('cached')
+            console.log(cache[request.term[0]])
+            for(var i=0;i<cache[request.term[0]].length;i++){
+                parts = cache[request.term[0]][i].split("/")
+                prop_name = parts[parts.length-1]
+                parts = prop_name.split("#")
+                prop_name = parts[parts.length-1]
+                if(prop_name.startsWith(request.term)){
+                    filtered.push(cache[request.term[0]][i]);
+                }
+                else{
+
+                }
+            }
+            console.log('filtered')
+            console.log(filtered);
+            response(filtered);
+            //response(cache[request.term[0]])
         }
         else{
+            console.log('not cached')
             $.ajax({
               url: "get_properties_autocomplete",
               data: {"term": request.term, "ontologies": "{{ontologies_txt}}"},
               success: function(data, textStatus, jqXHR){
                     console.log("success!");
-                    console.log(data["properties"]);
+                    //console.log(data["properties"]);
+                    cache[request.term[0]] = data["properties"];//
                     response(data["properties"]);
               },
             });
@@ -217,12 +240,12 @@ function add_predicted_properties(){
         var cand_props = pair["properties"];
         $(this).on( "autocompleteresponse", function( event, ui ) {
                 for(var i=cand_props.length-1;i>=0;i--){
-                    ui.content.unshift(cand_props[i]);
+                    j={'label': "(predicted) "+cand_props[i], 'value': cand_props[i]}
+                    ui.content.unshift(j);
                 }
                 console.log('cand_props updated');
-                console.log(ui.content);
+                //console.log(ui.content);
         } );
-
     });
 }
 
@@ -230,6 +253,7 @@ function set_general_properties(){
     $( ".property" ).autocomplete( "option", "source", properties );
 }
 
+/*
 function fetch_properties(){
                 $.get( "get_properties?ontologies={{ontologies_txt|safe}}", function( data ) {
               //alert( "Load was performed." );
@@ -239,15 +263,20 @@ function fetch_properties(){
               set_general_properties();
         });
 }
+*/
 
-function predict_properties(){
+function predict_all_properties(){
                console.log("now is sending the predict properties")
+               console.log("subject_header: "+subject_header)
+               console.log("file_name: "+the_file_name)
                 $.ajax({
                   type: "POST",
                   url: "/predict_properties",
-                  data: {"subject": subject_header, "file_name":file_name, "k":3},
+                  data: {"subject": subject_header, "file_name":the_file_name, "k":3},
+                  async: false,
                 }).done(function(data){
                     console.log("cols_properties pairs:")
+                    console.log(data)
                     console.log(data["cols_properties"])
                     cols_properties = data["cols_properties"]
                     //add_predicted_properties()
