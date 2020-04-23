@@ -12,6 +12,11 @@ import logging
 import io
 import annotator
 
+if 'UPLOAD_ONTOLOGY' in os.environ:
+    UPLOAD_ONTOLOGY = os.environ['UPLOAD_ONTOLOGY'].lower() == "true"
+else:
+    UPLOAD_ONTOLOGY = False
+
 
 def set_config(logger, logdir=""):
     if logdir != "":
@@ -49,7 +54,7 @@ def home():
                     os.path.join(fdir, 'properties.txt')):
                 datasets.append(f)
     print(datasets)
-    return render_template('index.html', datasets=datasets)
+    return render_template('index.html', datasets=datasets, UPLOAD_ONTOLOGY=UPLOAD_ONTOLOGY)
 
 
 @app.route("/predict_subject", methods=['POST'])

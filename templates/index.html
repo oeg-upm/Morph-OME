@@ -21,6 +21,7 @@
   <button class="ui button" type="submit">Open With Editor</button>
 </form>
 
+{%if UPLOAD_ONTOLOGY%}
 <hr>
 
 <form class="ui form" action="add_ontology" method=post enctype=multipart/form-data>
@@ -35,6 +36,7 @@
   <button class="ui button" type="submit">Add</button>
 </form>
 
+{%endif%}
 
 
 
