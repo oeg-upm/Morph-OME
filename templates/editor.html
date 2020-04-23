@@ -157,6 +157,12 @@ $("#entity_column").change(function (){
         }
         console.log('predicted classes j')
         console.log(predicted_classes)
+        if(predicted_classes_list.length > 0){
+            // manually set the predicted class to the input
+            $("#concept").val(predicted_classes_list[0]);
+            // To trigger the select event
+            $("#concept").data('ui-autocomplete')._trigger('select', 'autocompleteselect', {item:{value:$("#concept").val()}});
+        }
         console.log('to call predict all')
     })
     .always(function(data){
@@ -221,6 +227,7 @@ function add_predicted_properties(){
         var pair = cols_properties[index];
         console.log(pair);
         var cand_props = pair["properties"];
+
         $(this).on( "autocompleteresponse", function( event, ui ) {
                 for(var i=cand_props.length-1;i>=0;i--){
                     j={'label': "(predicted) "+cand_props[i], 'value': cand_props[i]}
@@ -229,6 +236,11 @@ function add_predicted_properties(){
                 console.log('cand_props updated');
                 //console.log(ui.content);
         } );
+        // set the highest predicted value
+        if(cand_props.length> 0){
+            $(this).val(cand_props[0]);
+        }
+
     });
 }
 
