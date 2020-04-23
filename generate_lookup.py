@@ -14,7 +14,7 @@ def generate_lookup(f_dir, dataset_name, data_dir):
     :param dataset_name:
     :return:
     """
-    dataset_dir = os.path.join('data', dataset_name)
+    dataset_dir = os.path.join(data_dir, dataset_name)
     if not os.path.exists(dataset_dir):
         print("dataset_dir: "+dataset_dir)
         os.makedirs(dataset_dir)
@@ -29,7 +29,7 @@ def generate_lookup(f_dir, dataset_name, data_dir):
             pass
     if found:
         classes = get_all_classes(g)
-        classes_f_name = os.path.join(dataset_dir,'classes.txt')
+        classes_f_name = os.path.join(dataset_dir, 'classes.txt')
         f = open(classes_f_name,'w')
         for c in classes:
             f.write(c+"\n")
