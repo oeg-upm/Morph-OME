@@ -40,7 +40,7 @@ def generate_lookup(f_dir, dataset_name, data_dir):
         for p in properties:
             f.write(p+"\n")
         f.close()
-        build_property_lookup(dataset_name,properties_f_dir)
+        build_property_lookup(dataset_name,properties_f_dir, data_dir)
     else:
         print("Unable to parse: "+f_dir)
 
