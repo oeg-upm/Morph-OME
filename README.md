@@ -3,7 +3,7 @@
 An Online Mapping Editor to generate R2RML, RML, and YARRRML without writing a single line.
 It also supports automatic suggestions of the subject and property columns using 
 the APIs of [tada_web](https://github.com/oeg-upm/tada-web).
- 
+
 
 # Run with Docker
 1. `sh run_docker.sh`
@@ -21,10 +21,23 @@ the APIs of [tada_web](https://github.com/oeg-upm/tada-web).
 
 
 # Automatic Suggestions
-It uses the APIs of [web]. To use it, you need to export an environment variable `TADA_HOST` with the 
+It uses the APIs of[tada_web](https://github.com/oeg-upm/tada-web). To use it, you need to export an environment variable `TADA_HOST` with the 
 URL of the `tada-web` host url.
 For example, you can set it like that
 `export TADA_HOST="http://127.0.0.1:5001/"`
+
+
+
+# Environment Variables
+* `TADA_HOST`:
+    * (Optional)
+    * The URL of TADA APIs. If it is missing, the class and properties won't be annotated automatically
+    * Default: ""
+* `UPLOAD_ONTOLOGY`: 
+    * (Optional)
+    * To show/hide an ontology upload page (in the main page) for the autocomplete functionality
+    * Default: True
+
 
 
 # Screenshot
@@ -33,3 +46,4 @@ For example, you can set it like that
 
 # Remarks
 * To run the application on a specific port (e.g. say port 5001) ``` python app.py 5001```.
+* To run the application on a specific port (e.g. say port 5001, and any given host 0.0.0.0) ``` python app.py 0.0.0.0 5001```.

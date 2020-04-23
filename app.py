@@ -15,7 +15,7 @@ import annotator
 if 'UPLOAD_ONTOLOGY' in os.environ:
     UPLOAD_ONTOLOGY = os.environ['UPLOAD_ONTOLOGY'].lower() == "true"
 else:
-    UPLOAD_ONTOLOGY = False
+    UPLOAD_ONTOLOGY = True
 
 
 def set_config(logger, logdir=""):
