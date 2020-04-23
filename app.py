@@ -7,7 +7,7 @@ import util
 import sys
 import string
 import random
-from generate_lookup import generate_lookup
+import generate_lookup
 import logging
 import io
 import annotator
@@ -39,6 +39,7 @@ BASE_DIR = os.path.dirname(app.instance_path)
 DATA_DIR = os.path.join(BASE_DIR, 'data')
 UPLOAD_DIR = os.path.join(BASE_DIR, 'upload')
 DOWNLOAD = False
+generate_lookup.DATA_DIR = DATA_DIR
 
 
 @app.route("/")
@@ -297,7 +298,7 @@ def add_ontology():
             if not os.path.exists(UPLOAD_DIR):
                 os.mkdir(UPLOAD_DIR)
             sourcefile.save(uploaded_file_dir)
-            generate_lookup(uploaded_file_dir, request.form['name'].strip())
+            generate_lookup.generate_lookup(uploaded_file_dir, request.form['name'].strip())
             return render_template('msg.html', msg="Ontology added successfully", msg_title="Success")
         else:
             print("blank source file")
