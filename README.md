@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3764202.svg)](https://doi.org/10.5281/zenodo.3764202)
+
 ![OME](https://github.com/oeg-upm/OME/raw/master/logo.png)
 
 An Online Mapping Editor to generate R2RML, RML, and YARRRML without writing a single line.
@@ -48,3 +50,18 @@ For example, you can set it like that
 # Remarks
 * To run the application on a specific port (e.g. say port 5001) ``` python app.py 5001```.
 * To run the application on a specific port (e.g. say port 5001, and any given host 0.0.0.0) ``` python app.py 0.0.0.0 5001```.
+
+# To cite
+```
+@software{alobaid_ahmad_2020_3764202,
+  author       = {Alobaid, Ahmad and
+                  Corcho, Oscar},
+  title        = {OME},
+  month        = apr,
+  year         = 2020,
+  publisher    = {Zenodo},
+  doi          = {10.5281/zenodo.3764202},
+  url          = {https://doi.org/10.5281/zenodo.3764202}
+}
+```
+
