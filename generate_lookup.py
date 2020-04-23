@@ -5,10 +5,9 @@ import util
 from collections import Counter
 
 formats = ['xml', 'ttl']
-DATA_DIR = 'data'
 
 
-def generate_lookup(f_dir, dataset_name):
+def generate_lookup(f_dir, dataset_name, data_dir):
     """
     Extract classes and properties from a given ontology
     :param f_dir:
@@ -86,7 +85,7 @@ def get_all_classes(g):
     return classes
 
 
-def build_property_lookup(dataset_name,properties_fdir):
+def build_property_lookup(dataset_name,properties_fdir, data_dir):
     """
     Build a property lookup
     :param properties_fdir:
@@ -96,7 +95,7 @@ def build_property_lookup(dataset_name,properties_fdir):
     properties = util.get_properties_as_list([dataset_name])
     # start_idx = predict_base_URL(properties)
     lookup_name = 'lookup'
-    lookup_folder_dir = os.path.join(DATA_DIR,dataset_name,lookup_name)
+    lookup_folder_dir = os.path.join(data_dir,dataset_name,lookup_name)
     if not os.path.exists(lookup_folder_dir):
         os.mkdir(lookup_folder_dir)
     # for start in string.ascii_lowercase:
