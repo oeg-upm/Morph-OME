@@ -17,6 +17,7 @@ def generate_lookup(f_dir, dataset_name):
     """
     dataset_dir = os.path.join('data', dataset_name)
     if not os.path.exists(dataset_dir):
+        print("dataset_dir: "+dataset_dir)
         os.makedirs(dataset_dir)
     g = rdflib.Graph()
     found = False
