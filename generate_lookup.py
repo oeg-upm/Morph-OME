@@ -92,7 +92,7 @@ def build_property_lookup(dataset_name,properties_fdir, data_dir):
     :return:
     """
     print("build_property_lookup> dataset_name: "+dataset_name)
-    properties = util.get_properties_as_list([dataset_name])
+    properties = util.get_properties_as_list([dataset_name], data_dir=data_dir)
     # start_idx = predict_base_URL(properties)
     lookup_name = 'lookup'
     lookup_folder_dir = os.path.join(data_dir,dataset_name,lookup_name)

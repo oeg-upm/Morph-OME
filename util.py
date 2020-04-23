@@ -3,10 +3,6 @@ import random
 import os
 
 
-#DATA_DIR = os.path.join(BASE_DIR, 'data')
-DATA_DIR = 'data'
-
-
 def get_random_string(length=4):
     return ''.join(random.choice(string.lowercase) for i in range(length))
 
@@ -218,26 +214,26 @@ def get_classes_from_file(odir):
     return classes
 
 
-def get_properties_as_list(ontologies):
+def get_properties_as_list(ontologies, data_dir):
     """
     :param ontologies:
     :return:
     """
     properties = []
     for o in ontologies:
-        odir = os.path.join(DATA_DIR, o, 'properties.txt')
+        odir = os.path.join(data_dir, o, 'properties.txt')
         properties += get_classes_from_file(odir)
     return properties
 
 
-def get_classes_as_txt(ontologies):
+def get_classes_as_txt(ontologies, data_dir):
     """
     :param ontologies:
     :return:
     """
     classes = []
     for o in ontologies:
-        odir = os.path.join(DATA_DIR, o, 'classes.txt')
+        odir = os.path.join(data_dir, o, 'classes.txt')
         classes += get_classes_from_file(odir)
     # return classes
     txt = ""

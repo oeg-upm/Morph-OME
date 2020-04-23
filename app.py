@@ -177,7 +177,7 @@ def editor():
     if headers == []:
         error_msg = "Can't parse the source file "
         return render_template('msg.html', msg=error_msg, msg_title="Error")
-    labels = util.get_classes_as_txt(ontologies)
+    labels = util.get_classes_as_txt(ontologies, data_dir=DATA_DIR)
     # f = open(os.path.join(DATA_DIR, "labels.txt"))
     return render_template('editor.html', labels_txt=labels, ontologies_txt=",".join(ontologies), headers=headers,
                            callback=callback_url, file_name=fname, error_msg=error_msg, warning_msg=warning_msg)
@@ -187,7 +187,7 @@ def editor():
 def get_properties():
     ontologies_txt = request.args.get('ontologies')
     ontologies = ontologies_txt.split(',')
-    return jsonify({'properties': util.get_properties_as_list(ontologies)})
+    return jsonify({'properties': util.get_properties_as_list(ontologies, data_dir=DATA_DIR)})
 
 
 @app.route("/get_properties_autocomplete")
