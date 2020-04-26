@@ -31,7 +31,7 @@ def set_config(logger, logdir=""):
 
 
 logger = logging.getLogger(__name__)
-set_config(logger)
+# set_config(logger)
 
 app = Flask(__name__)
 
@@ -39,6 +39,8 @@ BASE_DIR = os.path.dirname(app.instance_path)
 DATA_DIR = os.path.join(BASE_DIR, 'data')
 UPLOAD_DIR = os.path.join(BASE_DIR, 'upload')
 DOWNLOAD = False
+
+set_config(logger, os.path.join(BASE_DIR, 'ome.log'))
 
 
 @app.route("/")
@@ -81,7 +83,7 @@ def predict_subject():
                         return jsonify({'error': 'The provided subject header is not found'}), 400
                     else:
                         logger.debug("predict> will try to annotate the subject column")
-                        entities = annotator.annotate_subject(source_dir, subject_col_id, 3)
+                        entities = annotator.annotate_subject(source_dir, subject_col_id, 3, logger=logger)
                         return jsonify({'entities': entities})
         else:
             jsonify({'error': 'The provided file does not exist on the server'}), 404
@@ -112,7 +114,7 @@ def predict_properties():
                     if subject_col_id is None:
                         return jsonify({'error': 'The provided subject header is not found'}), 400
                     else:
-                        pairs = annotator.annotate_property(source_dir, subject_col_id, 3)
+                        pairs = annotator.annotate_property(source_dir, subject_col_id, 3, logger=logger)
                         print(pairs)
                         return jsonify({'cols_properties': pairs})
         else:
