@@ -61,6 +61,7 @@ def home():
 
 @app.route("/predict_subject", methods=['POST'])
 def predict_subject():
+    global logger
     if 'file_name' in request.form:
         fname = request.form['file_name']
         logger.debug('predict> file_name: ' + fname)
@@ -92,6 +93,7 @@ def predict_subject():
 
 @app.route("/predict_properties", methods=['POST'])
 def predict_properties():
+    global logger
     if 'file_name' in request.form:
         fname = request.form['file_name']
         logger.debug('predict_property> file_name: ' + fname)

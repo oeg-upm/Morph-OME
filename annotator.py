@@ -9,7 +9,7 @@ except Exception as e:
     TADA_HOST = ''
 
 
-def annotate_subject(source_dir, subject_col_id, top_k=3, logger):
+def annotate_subject(source_dir, subject_col_id, top_k=3, logger=None):
     """
     :param source_dir: the directory of the source file
     :param subject_col_id: the index of the subject column
@@ -49,7 +49,7 @@ def annotate_subject(source_dir, subject_col_id, top_k=3, logger):
     return entities
 
 
-def annotate_property(source_dir, subject_col_id, top_k=3, logger):
+def annotate_property(source_dir, subject_col_id, top_k=3, logger=None):
     """
     :param source_dir: the directory of the source file
     :param subject_col_id: the index of the subject column
