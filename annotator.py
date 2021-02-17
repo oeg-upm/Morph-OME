@@ -1,6 +1,7 @@
 import requests
 import os
 import io
+import traceback
 
 
 try:
@@ -40,12 +41,16 @@ def annotate_subject(source_dir, subject_col_id, top_k=3, logger=None):
         entities = response.json()['entities']
     else:
         entities = []
+        # print("response: ")
+        # print(response.content)
+        # print(response.status_code)
         try:
             print(response.json())
             logger.debug(str(response.json()))
         except:
             print("No JSON")
             logger.debug("annotate_subject> No JSON")
+            traceback.print_exc()
     return entities
 
 
@@ -85,5 +90,6 @@ def annotate_property(source_dir, subject_col_id, top_k=3, logger=None):
         except:
             print("No JSON")
             logger.debug("annotate_property> No JSON")
+            traceback.print_exc()
     return pairs
 
