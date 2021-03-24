@@ -11,6 +11,7 @@ import generate_lookup
 import logging
 import io
 import annotator
+import chardet
 
 
 if 'UPLOAD_ONTOLOGY' in os.environ:
@@ -182,9 +183,23 @@ def editor():
     if headers == []:
         error_msg = "Can't parse the source file "
         return render_template('msg.html', msg=error_msg, msg_title="Error")
+
     print(headers)
     logger.debug("headers: ")
     logger.debug(str(headers))
+    headers_str_test = str(headers)
+    logger.debug("headers string: ")
+    logger.debug(headers_str_test)
+    detected_encoding = chardet.detect(headers_str_test)['encoding']
+    logger.debug("detected encoding %s " % (detected_encoding))
+    decoded_s = header_str.decode(detected_encoding)
+    headers_str_test = decoded_s.encode('utf-8')
+    logger.debug("headers utf-8 encoded: ")
+    logger.debug(headers_str_test)
+
+
+
+
     labels = util.get_classes_as_txt(ontologies, data_dir=DATA_DIR)
     # f = open(os.path.join(DATA_DIR, "labels.txt"))
     return render_template('editor.html', labels_txt=labels, ontologies_txt=",".join(ontologies), headers=headers,
