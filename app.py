@@ -187,7 +187,7 @@ def editor():
     print(headers)
     logger.debug("headers: ")
     logger.debug(str(headers))
-    headers_str_test = str(headers)
+    headers_str_test = headers[-1]#str(headers)
     logger.debug("headers string: ")
     logger.debug(headers_str_test)
     detected_encoding = chardet.detect(headers_str_test)['encoding']
