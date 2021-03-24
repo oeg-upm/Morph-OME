@@ -183,6 +183,8 @@ def editor():
         error_msg = "Can't parse the source file "
         return render_template('msg.html', msg=error_msg, msg_title="Error")
     print(headers)
+    logger.debug("headers: ")
+    logger.debug(str(headers))
     labels = util.get_classes_as_txt(ontologies, data_dir=DATA_DIR)
     # f = open(os.path.join(DATA_DIR, "labels.txt"))
     return render_template('editor.html', labels_txt=labels, ontologies_txt=",".join(ontologies), headers=headers,
