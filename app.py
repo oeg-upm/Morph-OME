@@ -1,7 +1,3 @@
-import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
-
 import os
 import json
 from flask import Flask, render_template, jsonify, request, send_from_directory
@@ -15,6 +11,7 @@ import generate_lookup
 import logging
 import io
 import annotator
+
 
 if 'UPLOAD_ONTOLOGY' in os.environ:
     UPLOAD_ONTOLOGY = os.environ['UPLOAD_ONTOLOGY'].lower() == "true"

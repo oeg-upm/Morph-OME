@@ -1,6 +1,7 @@
 import string
 import random
 import os
+import chardet
 
 
 def get_random_string(length=4):
@@ -33,6 +34,15 @@ def get_headers_csv(file_dir):
     header = []
     start_q = False
     start_idx = 0
+
+    # detected_encoding = chardet.detect(s)['encoding']
+    # logger.debug("detected encoding %s for %s" % (detected_encoding, fname))
+    # decoded_s = s.decode(detected_encoding)
+    detected_encoding = chardet.detect(header_str)['encoding']
+    logger.debug("detected encoding %s " % (detected_encoding))
+    decoded_s = header_str.decode(detected_encoding)
+    header_str = decoded_s
+
     print("header_string: "+header_str)
     for idx, ch in enumerate(header_str):
         if ch == '"' and start_q == True:
