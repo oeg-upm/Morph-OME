@@ -192,7 +192,7 @@ def editor():
     logger.debug(headers_str_test)
     detected_encoding = chardet.detect(headers_str_test)['encoding']
     logger.debug("detected encoding %s " % (detected_encoding))
-    decoded_s = header_str.decode(detected_encoding)
+    decoded_s = headers_str_test.decode(detected_encoding)
     headers_str_test = decoded_s.encode('utf-8')
     logger.debug("headers utf-8 encoded: ")
     logger.debug(headers_str_test)
