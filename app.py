@@ -1,3 +1,7 @@
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
+
 import os
 import json
 from flask import Flask, render_template, jsonify, request, send_from_directory
