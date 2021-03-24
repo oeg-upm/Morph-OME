@@ -43,7 +43,7 @@ def get_headers_csv(file_dir):
     decoded_s = header_str.decode(detected_encoding)
     header_str = decoded_s
 
-    print("header_string: "+header_str)
+    print("header_string: %s " % header_str)
     for idx, ch in enumerate(header_str):
         if ch == '"' and start_q == True:
             start_q = False
