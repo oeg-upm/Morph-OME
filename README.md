@@ -44,7 +44,10 @@ For example, you can set it like that
     * Github app secret  
 * `github_appid`:
     * Github app ID
-
+* `MORPH_PATH`:
+    * The local path to morph-rdb jar to generate ttl
+* `RMLMAPPER_PATH`:
+    * The local path to rmlmapper jar to generate the ttl
 
 
 

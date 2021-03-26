@@ -2,7 +2,7 @@ import os
 import json
 from flask import Flask, render_template, jsonify, request, send_from_directory, session, redirect
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import login_user, logout_user, login_required, LoginManager
+from flask_login import login_user, logout_user, login_required, LoginManager, current_user
 from werkzeug.utils import secure_filename
 import requests
 import util
@@ -14,6 +14,9 @@ import logging
 import io
 import annotator
 import chardet
+import rdflib
+import subprocess
+import shutil
 
 
 import models
@@ -41,14 +44,13 @@ logger = logging.getLogger(__name__)
 # set_config(logger)
 
 
-
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 
 BASE_DIR = os.path.dirname(app.instance_path)
 DATA_DIR = os.path.join(BASE_DIR, 'data')
 UPLOAD_DIR = os.path.join(BASE_DIR, 'upload')
+KG_DIR = os.path.join(BASE_DIR, 'kg')
 DOWNLOAD = False
 
 set_config(logger, os.path.join(BASE_DIR, 'ome.log'))
@@ -61,14 +63,11 @@ db = models.db
 db.init_app(app)
 app.app_context().push()
 db.create_all()
-# models.db.init_app(app)
+
 
 # Login
 login_manager = LoginManager()
 login_manager.init_app(app)
-
-
-
 
 
 @login_manager.user_loader
@@ -76,17 +75,6 @@ def load_user(user_id):
     print("Trying to fetch user with id: " + str(user_id))
     return models.User.query.get(int(user_id))
 
-
-# @login_manager.user_loader
-# def load_user(user_id):
-#     print("Trying to fetch user with id: " + str(user_id))
-#     try:
-#         print("Fetched")
-#         return models.User.get(user_id)
-#     except Exception as e:
-#         print("Exception: "+str(e))
-#         return None
-#
 
 @app.route("/")
 def home():
@@ -96,7 +84,7 @@ def home():
         fdir = os.path.join(DATA_DIR, f)
         print("checking f: " + fdir)
         if os.path.isdir(fdir):
-            print("isdir: " + fdir)
+            print("is dir: " + fdir)
             if os.path.exists(os.path.join(fdir, 'classes.txt')) and os.path.exists(
                     os.path.join(fdir, 'properties.txt')):
                 datasets.append(f)
@@ -306,7 +294,7 @@ def editor():
             fname = util.get_random_string(4) + "-" + filename
             uploaded_file_dir = os.path.join(UPLOAD_DIR, fname)
             f = open(uploaded_file_dir, 'w')
-            f.write(r.content)
+            f.write(r.text)
             f.close()
         else:
             error_msg = "the source %s can not be accessed" % source
@@ -373,6 +361,95 @@ def get_properties_autocomplete():
         return jsonify({'properties': properties})
 
 
+@app.route("/sparql", methods=['POST', 'GET'])
+def sparql_view():
+    if request.method == "GET":
+        if 'id' in request.args:
+            print("Getting ID from GET")
+            return render_template('sparql.html', kgid=request.args.get('id'))
+        else:
+            print("Missing ID from GET")
+            return render_template('msg.html', error_msg="KG ID is missing")
+    else:
+        if 'kgid' in request.form and request.form['kgid'] != "":
+            if 'query' in request.form:
+                query = request.form['query']
+                print("Query: ")
+                print(query)
+                print("request form: ")
+                print(request.form)
+                print("kgid")
+                print(request.form['kgid'])
+                fname = str(request.form['kgid']) + ".ttl"
+                fpath = os.path.join(KG_DIR, fname)
+
+                if not os.path.exists(fpath):
+                    return jsonify(error="Invalid KG id"), 400
+
+                g = rdflib.Graph()
+                print("will parse: "+fpath)
+                g.parse(fpath, format="ttl")
+                print("query kg with: "+query)
+                qres = g.query(query)
+                results = []
+                for row in qres:
+                    print(row)
+                    results.append([str(v) for v in row])
+
+                print("results: ")
+                print(results)
+                return jsonify(results=results)
+                # return results
+
+            else:
+                print("Missing query")
+                return jsonify(error="missing query"), 400
+
+        else:
+            print("Missing id")
+            return jsonify(error="missing id"), 400
+
+
+def generate_kg_rml(mapping_fdir):
+    """
+    :param mapping_fdir: The directory to the generated fdir
+    :return:
+    """
+    if not os.path.exists(KG_DIR):
+        os.makedirs(KG_DIR)
+    if current_user.is_authenticated:
+        print("user is authenticated: "+current_user.username)
+        if 'RMLMAPPER_PATH' in os.environ:
+            jar_path = os.environ['RMLMAPPER_PATH']
+            print("jar_path exists: "+jar_path)
+
+            user_group_rel = models.ManyUserGroup.query.filter_by(user=current_user.id).first()
+            if user_group_rel:
+                group = models.Group.query.filter_by(id=user_group_rel.group).first()
+                if group:
+                    kg = models.KG(group=group.id, name=get_random_text(n=10))
+                    db.session.add(kg)
+                    db.session.commit()
+                    fname = str(kg.id)
+                else:
+                    print("group does not exists")
+                    fname = "test1"
+            else:
+                print("user group membership does not exists")
+                fname = "test2"
+            out_path = os.path.join(KG_DIR, fname+".ttl")
+
+            cmd = """cd "%s" ;java -jar "%s" -m "%s" -o "%s" """ % (UPLOAD_DIR, jar_path, mapping_fdir, out_path)
+            print("cmd: %s" % cmd)
+            subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
+            return fname
+        else:
+            print("MORPH_PATH is missing")
+    else:
+        print("user is not authenticated")
+    return None
+
+
 @app.route("/generate_mapping", methods=['POST'])
 def generate_mapping():
     if 'entity_class' in request.form and 'entity_column' in request.form and 'file_name' in request.form and 'mapping_lang' in request.form:
@@ -380,10 +457,12 @@ def generate_mapping():
         entity_column = request.form['entity_column']
         file_name = request.form['file_name']
         mapping_lang = request.form['mapping_lang']
-        # print "request form: "
-        # print list(request.form.keys())
+        print("request form list: ")
+        print(list(request.form.keys()))
+        print("request form: ")
+        print(request.form.keys())
         mappings = []
-        for i in range(len(request.form.keys())):
+        for i in range(len(list(request.form.keys()))):
             key = 'form_key_' + str(i)
             val = 'form_val_' + str(i)
             # print "key = ", key
@@ -409,6 +488,13 @@ def generate_mapping():
             util.generate_rml_mappings_csv(mapping_file_dir, file_name, entity_class, entity_column, mappings)
         elif mapping_lang == "yarrrml":
             util.generate_yarrrml_mappings_csv(mapping_file_dir, file_name, entity_class, entity_column, mappings)
+        elif mapping_lang == "kg-rml":
+            util.generate_rml_mappings_csv(mapping_file_dir, file_name, entity_class, entity_column, mappings)
+            kgid = generate_kg_rml(mapping_file_dir)
+            if kgid is None:
+                return render_template('msg.html', error_msg="Error generating KG")
+            else:
+                return render_template('msg.html', msg="Generated the KG.", html="<a href='/sparql?id=%s'>Go to SPARQL</a>" % (str(kgid)))
         else:
             return render_template('msg.html', msg="Invalid mapping language", msg_title="Error")
         f = open(mapping_file_dir)
@@ -461,7 +547,6 @@ def add_ontology():
 
 
 if __name__ == '__main__':
-    # db.create_all()
     if len(sys.argv) == 2 and sys.argv[1].isdigit():
         app.run(debug=True, port=int(sys.argv[1]))
     elif len(sys.argv) == 3 and sys.argv[2].isdigit():

@@ -1,10 +1,11 @@
 {% extends "base.html" %}
 {%block head%}
 
-
 {%endblock%}
 
 {%block content%}
+
+
 {%if warning_msg%}
 <div class="ui warning message">
     <div class="header">
@@ -75,7 +76,10 @@
         <div class="field">
             <label>Mapping Language</label>
             <select class="ui search dropdown" form="editor-form" name="mapping_lang">
-                <option value="KG">Online KG (for testing only)</option>
+                {%if current_user.is_authenticated %}
+                    <option value="kg-rml">Online KG (using RML Mapper)</option>
+                    <!--<option value="kg-r2rml">Online KG (using Morph-RDB)</option>-->
+                {%endif%}
                 <option value="r2rml">R2RML</option>
                 <option value="rml">RML</option>
                 <option value="yarrrml">YARRRML</option>

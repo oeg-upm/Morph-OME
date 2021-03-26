@@ -1,6 +1,8 @@
+
 *.db
 data/*
 upload/*
+kg
 
 *.csv
 *.r2rml

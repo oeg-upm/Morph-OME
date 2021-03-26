@@ -128,15 +128,15 @@ def generate_rml_mappings_csv(mapping_file_dir, file_name, entity_class, entity_
 @prefix schema: <http://schema.org/>.
 @prefix gn: <http://www.geonames.org/ontology#>.
 @prefix geosp: <http://www.telegraphis.net/ontology/geography/geography#> .
-@base <http://mappingpedia.linkeddata.es/resource/> .
-<%s>
+@base <http://morph.linkeddata.es/resource/> .
+
+<%s>  a rr:TriplesMap;
 rml:logicalSource [
     rml:source  "%s";
     rml:referenceFormulation ql:CSV
-
 ];
 rr:subjectMap [
-    rml:reference "%s";
+    rr:template "http://mappingpedia.linkeddata.es/resource/{%s}";
     rr:class <%s>
 ];
 %s
@@ -148,7 +148,8 @@ rr:subjectMap [
     print('mapping file path:')
     print(mapping_file_path)
     f = open(mapping_file_path, 'w')
-    f.write(mapping_file.encode('utf8'))
+    f.write(mapping_file)
+    #f.write(mapping_file.encode('utf8'))
     f.close()
     return mapping_file_path
 

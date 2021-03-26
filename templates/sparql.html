@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content%}
+
+<div class="ui form">
+  <div class="field">
+    <label>Text</label>
+    <textarea id="qview">
+      select * where {?s ?p ?o}
+
+    </textarea>
+  </div>
+</div>
+
+<button class="ui secondary button" onclick="send_query()">
+  Send Query
+</button>
+
+<div id="results">
+</div>
+
+<script>
+
+function send_query(){
+    var t='<table class="ui celled table"><tbody>';
+    var f=' </tbody></table>';
+    var r,i,j;
+
+    $.post({
+        url: "/sparql",
+      data: {"query": $("#qview").val(), "kgid": "{{kgid}}"},
+      success: function(data, textStatus, jqXHR){
+            console.log("success!");
+            console.log(data["results"]);
+            for(i=0;i<data["results"].length;i++){
+              r = "<tr>";
+              for(j=0;j<data["results"][i].length;j++){
+                r+="<td>" + data["results"][i][j]+"</td>";
+              }
+              r+="</tr>";
+              t+=r;
+            }
+            t+=r;
+            $("#results").html(t);
+      },
+    });
+}
+
+</script>
+
+
+
+{%endblock%}
