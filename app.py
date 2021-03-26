@@ -1,10 +1,8 @@
-import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
-
 import os
 import json
-from flask import Flask, render_template, jsonify, request, send_from_directory
+from flask import Flask, render_template, jsonify, request, send_from_directory, session, redirect
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import login_user, logout_user, login_required, LoginManager
 from werkzeug.utils import secure_filename
 import requests
 import util
@@ -16,6 +14,9 @@ import logging
 import io
 import annotator
 import chardet
+
+
+import models
 
 
 if 'UPLOAD_ONTOLOGY' in os.environ:
@@ -39,7 +40,21 @@ def set_config(logger, logdir=""):
 logger = logging.getLogger(__name__)
 # set_config(logger)
 
+
+
+
 app = Flask(__name__)
+app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
+
+# SQL
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////test.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+models.db.init_app(app)
+
+# Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+
 
 BASE_DIR = os.path.dirname(app.instance_path)
 DATA_DIR = os.path.join(BASE_DIR, 'data')
@@ -48,6 +63,23 @@ DOWNLOAD = False
 
 set_config(logger, os.path.join(BASE_DIR, 'ome.log'))
 
+
+@login_manager.user_loader
+def load_user(user_id):
+    print("Trying to fetch user with id: " + str(user_id))
+    return User.query.get(int(user_id))
+
+
+# @login_manager.user_loader
+# def load_user(user_id):
+#     print("Trying to fetch user with id: " + str(user_id))
+#     try:
+#         print("Fetched")
+#         return models.User.get(user_id)
+#     except Exception as e:
+#         print("Exception: "+str(e))
+#         return None
+#
 
 @app.route("/")
 def home():
@@ -63,6 +95,80 @@ def home():
                 datasets.append(f)
     print(datasets)
     return render_template('index.html', datasets=datasets, UPLOAD_ONTOLOGY=UPLOAD_ONTOLOGY)
+
+
+@app.route("/callback")
+def callback_view():
+    if'state' in session:
+        if 'state' in request.args:
+            if session['state']== request.args.get('state'):
+                print("State match")
+                if 'code' in request.args:
+                    session['code'] = request.args.get('code')
+                    data = {
+                        'client_id': os.environ['github_appid'],
+                        'client_secret': os.environ['github_secret'],
+                        'code': session['code'],
+                        'state': session['state']
+                    }
+                    response = requests.post('https://github.com/login/oauth/access_token', data=data)
+                    print("response status code: "+str(response.status_code))
+                    print("response content: "+str(response.text))
+                    try:
+                        session['access_token'] = response.text.split('&')[0].split('=')[1]
+                        print("got access token")
+                        headers = {
+                            "Authorization": "token %s" % session['access_token']
+                        }
+                        response = requests.get("https://api.github.com/user", headers=headers)
+                        try:
+                            j = response.json()
+                            print("user info: ")
+                            print(j)
+                        except Exception as e:
+                            print("error fetching user info from GitHub")
+                            print("Exception: " + str(e))
+
+                    except Exception as e:
+                        print("error getting the access token")
+                        print("Exception: "+str(e))
+                    # print("Received session state: ")
+                    # print(session['state'])
+                    # print("Get response: ")
+                    # print("Code parameters: ")
+                    # if 'state' in request.args:
+                    #     print("yes")
+                    # else:
+                    #     print("no")
+                    # print(request.args.get('state'))
+                    # print(request.args.get('code'))
+                    # print("post parameters:")
+                    # print(request.form)
+                    # return "OK"
+                    return render_template('msg.html', msg='Logged in successfully')
+                else:
+                    print("code is not passed in GitHub response")
+            else:
+                print("state mismatch: <%s> and <%s>" % (session['state'], request.args.get('state')))
+        else:
+            print("state is not passed in Github response")
+    else:
+        print("Missing state")
+    return render_template('msg.html', error_msg="Security error. Try to login again")
+
+
+def get_random_string(length):
+    # With combination of lower and upper case
+    result_str = ''.join(random.choice(string.ascii_letters) for i in range(length))
+    # print random string
+    print(result_str)
+
+
+@app.route("/login")
+def login_view():
+    session['state'] = get_random_text(10)
+    print("Generated state: "+session['state'])
+    return redirect("https://github.com/login/oauth/authorize?client_id=%s&state=%s" % (os.environ['github_appid'], session['state']))
 
 
 @app.route("/predict_subject", methods=['POST'])
@@ -193,16 +299,13 @@ def editor():
     logger.debug(str(headers))
     headers_str_test = headers[-1]#str(headers)
     logger.debug("headers string: ")
-    logger.debug(headers_str_test)
-    detected_encoding = chardet.detect(headers_str_test)['encoding']
-    logger.debug("detected encoding %s " % (detected_encoding))
-    decoded_s = headers_str_test.decode(detected_encoding)
-    headers_str_test = decoded_s.encode('utf-8')
-    logger.debug("headers utf-8 encoded: ")
-    logger.debug(headers_str_test)
-
-
-
+    # logger.debug(headers_str_test)
+    # detected_encoding = chardet.detect(headers_str_test)['encoding']
+    # logger.debug("detected encoding %s " % (detected_encoding))
+    # decoded_s = headers_str_test.decode(detected_encoding)
+    # headers_str_test = decoded_s.encode('utf-8')
+    # logger.debug("headers utf-8 encoded: ")
+    # logger.debug(headers_str_test)
 
     labels = util.get_classes_as_txt(ontologies, data_dir=DATA_DIR)
     # f = open(os.path.join(DATA_DIR, "labels.txt"))

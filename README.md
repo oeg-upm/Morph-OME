@@ -40,6 +40,12 @@ For example, you can set it like that
     * (Optional)
     * To show/hide an ontology upload page (in the main page) for the autocomplete functionality
     * Default: True
+* `github_secret`:
+    * Github app secret  
+* `github_appid`:
+    * Github app ID
+
+
 
 
 

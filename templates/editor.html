@@ -26,11 +26,6 @@
 
 <form method="POST" id="editor-form" action="generate_mapping" class="ui form" enctype=multipart/form-data>
 
-    <!--<p>detected iterator: {{iterator}}</p>-->
-    <!--<div class="field">-->
-    <!--<label>Format</label>-->
-    <!--<input type="text" name="format" value="csv"readonly>-->
-    <!--</div>-->
     <input type="text" name="file_name" value="{{file_name}}" id="file_name" readonly>
     <input type="hidden" name="format" value="csv">
     <input type="hidden" name="callback" value="{{callback}}">
@@ -54,7 +49,6 @@
 
     <div id="progressbar"></div>
     <hr>
-
 
     <table class="ui single line table ">
         <thead>
@@ -81,6 +75,7 @@
         <div class="field">
             <label>Mapping Language</label>
             <select class="ui search dropdown" form="editor-form" name="mapping_lang">
+                <option value="KG">Online KG (for testing only)</option>
                 <option value="r2rml">R2RML</option>
                 <option value="rml">RML</option>
                 <option value="yarrrml">YARRRML</option>
@@ -120,11 +115,15 @@ var labels = [
             //add_predicted_properties();
            }, // select function
            response: function (event, ui){
+                 console.log('concept autocomplete response');
+                /*
+                console.log('check comment');
                 for(var i=predicted_classes.length-1;i>=0;i--){
                     ui.content.unshift(predicted_classes[i]);
                 }
                 console.log('updated');
                 console.log(ui.content);
+                */
            }, // response function
     });//auto complete
 } );
@@ -218,6 +217,7 @@ $( ".property" ).autocomplete({
     }, // source function
 });// auto complete property
 
+
 function add_predicted_properties(){
     $('.property').each(function(index, obj){
         console.log("obj: ")
@@ -240,7 +240,6 @@ function add_predicted_properties(){
         if(cand_props.length> 0){
             $(this).val(cand_props[0]);
         }
-
     });
 }
 
@@ -253,7 +252,7 @@ function predict_all_properties(){
                   type: "POST",
                   url: "/predict_properties",
                   data: {"subject": subject_header, "file_name":the_file_name, "k":3},
-                  async: false,
+                  async: true,
                 }).done(function(data){
                     console.log("cols_properties pairs:")
                     console.log(data)
