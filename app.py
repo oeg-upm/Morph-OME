@@ -46,16 +46,6 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 
-# SQL
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////test.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-models.db.init_app(app)
-
-# Login
-login_manager = LoginManager()
-login_manager.init_app(app)
-
-
 BASE_DIR = os.path.dirname(app.instance_path)
 DATA_DIR = os.path.join(BASE_DIR, 'data')
 UPLOAD_DIR = os.path.join(BASE_DIR, 'upload')
@@ -63,11 +53,28 @@ DOWNLOAD = False
 
 set_config(logger, os.path.join(BASE_DIR, 'ome.log'))
 
+# SQL
+print('sqlite:///'+BASE_DIR+'/test.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///'+BASE_DIR+'/test.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = models.db
+db.init_app(app)
+app.app_context().push()
+db.create_all()
+# models.db.init_app(app)
+
+# Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+
+
+
 
 @login_manager.user_loader
 def load_user(user_id):
     print("Trying to fetch user with id: " + str(user_id))
-    return User.query.get(int(user_id))
+    return models.User.query.get(int(user_id))
 
 
 # @login_manager.user_loader
@@ -95,6 +102,17 @@ def home():
                 datasets.append(f)
     print(datasets)
     return render_template('index.html', datasets=datasets, UPLOAD_ONTOLOGY=UPLOAD_ONTOLOGY)
+
+
+@app.route("/logout")
+def logout_view():
+    logout_user()
+    return render_template('msg.html', msg="Logged out")
+
+
+@app.route("/current")
+def current_view():
+    return render_template('user.html')
 
 
 @app.route("/callback")
@@ -125,27 +143,33 @@ def callback_view():
                             j = response.json()
                             print("user info: ")
                             print(j)
+                            session['avatar'] = j['avatar_url']
+                            user = models.User.query.filter_by(username=j['login']).first()
+                            if user is None:
+                                print("Creating a new user")
+                                user = models.User(username=j['login'])
+                                group = models.Group(name=j['login']+"-Group")
+                                # user_group_repl = models.ManyUserGroup(user=user.id, group=group.id)
+                                db.session.add(user)
+                                # db.session.commit()
+                                db.session.add(group)
+                                # db.session.commit()
+                                # db.session.add(user_group_repl)
+                                db.session.commit()
+                                user_group_repl = models.ManyUserGroup(user=user.id, group=group.id)
+                                db.session.add(user_group_repl)
+                                db.session.commit()
+
+                            else:
+                                print("Login an existing user")
+                            login_user(user, remember=True)
+                            return render_template('msg.html', msg='Logged in successfully')
                         except Exception as e:
                             print("error fetching user info from GitHub")
                             print("Exception: " + str(e))
-
                     except Exception as e:
                         print("error getting the access token")
                         print("Exception: "+str(e))
-                    # print("Received session state: ")
-                    # print(session['state'])
-                    # print("Get response: ")
-                    # print("Code parameters: ")
-                    # if 'state' in request.args:
-                    #     print("yes")
-                    # else:
-                    #     print("no")
-                    # print(request.args.get('state'))
-                    # print(request.args.get('code'))
-                    # print("post parameters:")
-                    # print(request.form)
-                    # return "OK"
-                    return render_template('msg.html', msg='Logged in successfully')
                 else:
                     print("code is not passed in GitHub response")
             else:
@@ -437,6 +461,7 @@ def add_ontology():
 
 
 if __name__ == '__main__':
+    # db.create_all()
     if len(sys.argv) == 2 and sys.argv[1].isdigit():
         app.run(debug=True, port=int(sys.argv[1]))
     elif len(sys.argv) == 3 and sys.argv[2].isdigit():

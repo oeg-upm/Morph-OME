@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block content%}
+Username: {{ current_user.username }} <br>
+Avatar: {{session['avatar']}} <img height="30px" src="{{session['avatar']}}">
+{%endblock%}

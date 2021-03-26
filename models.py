@@ -1,9 +1,11 @@
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import UserMixin
 
 db = SQLAlchemy()
+# db.create_all()
 
 
-class User(db.Model):
+class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(220), unique=True, nullable=False)
 
@@ -36,3 +38,6 @@ class KG(db.Model):
     def __repr__(self):
         return '<KG %r>' % self.name
 
+
+
+# db.create_all()
