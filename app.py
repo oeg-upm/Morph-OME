@@ -76,20 +76,45 @@ def load_user(user_id):
     return models.User.query.get(int(user_id))
 
 
-@app.route("/")
-def home():
+def get_datasets():
     datasets = []
-    print("datadir: " + DATA_DIR)
+    # print("datadir: " + DATA_DIR)
     for f in os.listdir(DATA_DIR):
         fdir = os.path.join(DATA_DIR, f)
-        print("checking f: " + fdir)
+        # print("checking f: " + fdir)
         if os.path.isdir(fdir):
-            print("is dir: " + fdir)
+            # print("is dir: " + fdir)
             if os.path.exists(os.path.join(fdir, 'classes.txt')) and os.path.exists(
                     os.path.join(fdir, 'properties.txt')):
                 datasets.append(f)
-    print(datasets)
-    return render_template('index.html', datasets=datasets, UPLOAD_ONTOLOGY=UPLOAD_ONTOLOGY)
+    # print(datasets)
+    return datasets
+
+
+@app.route("/")
+def home():
+    # datasets = []
+    # print("datadir: " + DATA_DIR)
+    # for f in os.listdir(DATA_DIR):
+    #     fdir = os.path.join(DATA_DIR, f)
+    #     print("checking f: " + fdir)
+    #     if os.path.isdir(fdir):
+    #         print("is dir: " + fdir)
+    #         if os.path.exists(os.path.join(fdir, 'classes.txt')) and os.path.exists(
+    #                 os.path.join(fdir, 'properties.txt')):
+    #             datasets.append(f)
+    # print(datasets)
+    return render_template('index.html', datasets=get_datasets())
+
+
+@app.route("/ontologies", methods=["POST", "GET"])
+def ontologies_view():
+    if request.method=="POST":
+        pass
+    else:
+        datasets = get_datasets()
+        # datasets = []
+        return render_template('ontologies.html', datasets=datasets, UPLOAD_ONTOLOGY=UPLOAD_ONTOLOGY)
 
 
 @app.route("/logout")

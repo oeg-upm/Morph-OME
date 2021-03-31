@@ -1,6 +1,6 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3764202.svg)](https://doi.org/10.5281/zenodo.3764202)
 
-![OME](https://github.com/oeg-upm/OME/raw/master/logo.png)
+![OME](static/logo-min.png)
 
 An Online Mapping Editor to generate R2RML, RML, and YARRRML without writing a single line.
 It also supports automatic suggestions of the subject and property columns using 
