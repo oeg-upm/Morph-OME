@@ -5,7 +5,7 @@ import chardet
 
 
 def get_random_string(length=4):
-    return ''.join(random.choice(string.lowercase) for i in range(length))
+    return ''.join(random.choice(string.ascii_lowercase) for i in range(length))
 
 
 def get_headers(file_dir, file_type):
@@ -38,10 +38,12 @@ def get_headers_csv(file_dir):
     # detected_encoding = chardet.detect(s)['encoding']
     # logger.debug("detected encoding %s for %s" % (detected_encoding, fname))
     # decoded_s = s.decode(detected_encoding)
-    detected_encoding = chardet.detect(header_str)['encoding']
-    print("detected encoding %s " % (detected_encoding))
-    decoded_s = header_str.decode(detected_encoding)
-    header_str = decoded_s.encode('utf-8')
+    # print("to be detected: ")
+    # print(header_str)
+    # detected_encoding = chardet.detect(header_str)['encoding']
+    # print("detected encoding %s " % (detected_encoding))
+    # decoded_s = header_str.decode(detected_encoding)
+    # header_str = decoded_s.encode('utf-8')
 
     print("header_string: %s " % header_str)
     for idx, ch in enumerate(header_str):
@@ -59,8 +61,6 @@ def get_headers_csv(file_dir):
 
 
 def generate_r2rml_mappings(mapping_file_dir, file_name, entity_class, entity_column, mappings):
-    #print "mappings are: "
-    #print mappings
     mapping_id = get_random_string(10)
     single_property_mapping = u"""
         rr:predicateObjectMap [
@@ -76,9 +76,7 @@ def generate_r2rml_mappings(mapping_file_dir, file_name, entity_class, entity_co
     if table_name[-4:] == ".CSV":
         table_name = table_name[:-4]
     else:
-        #print table_name[:-4]
         print("Note that the filename is not terminated with .CSV")
-        #raise Exception("the file name should ends up with .CSV ")
     mapping_content = u"""
 @prefix rr: <http://www.w3.org/ns/r2rml#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
@@ -130,27 +128,28 @@ def generate_rml_mappings_csv(mapping_file_dir, file_name, entity_class, entity_
 @prefix schema: <http://schema.org/>.
 @prefix gn: <http://www.geonames.org/ontology#>.
 @prefix geosp: <http://www.telegraphis.net/ontology/geography/geography#> .
-@base <http://mappingpedia.linkeddata.es/resource/> .
-<%s>
+@base <http://morph.linkeddata.es/resource/> .
+
+<%s>  a rr:TriplesMap;
 rml:logicalSource [
     rml:source  "%s";
     rml:referenceFormulation ql:CSV
-
 ];
 rr:subjectMap [
-    rml:reference "%s";
+    rr:template "http://mappingpedia.linkeddata.es/resource/{%s}";
     rr:class <%s>
 ];
 %s
 .
     """ % (mapping_id, file_name, entity_column, entity_class, property_column_mapping)
-    print mapping_file
+    print(mapping_file)
     mapping_file_path = mapping_file_dir
     # mapping_file_path = os.path.join(BASE_DIR, 'local', mapping_id+'.rml.ttl')
-    print 'mapping file path:'
-    print mapping_file_path
+    print('mapping file path:')
+    print(mapping_file_path)
     f = open(mapping_file_path, 'w')
-    f.write(mapping_file.encode('utf8'))
+    f.write(mapping_file)
+    #f.write(mapping_file.encode('utf8'))
     f.close()
     return mapping_file_path
 
@@ -202,11 +201,11 @@ mappings:
         po:
 %s
     """ % (concept_name, file_name, entity_column, property_column_mapping)
-    print mapping_file
+    print(mapping_file)
     mapping_file_path = mapping_file_dir
     # mapping_file_path = os.path.join(BASE_DIR, 'local', mapping_id+'.rml.ttl')
-    print 'mapping file path:'
-    print mapping_file_path
+    print('mapping file path:')
+    print(mapping_file_path)
     f = open(mapping_file_path, 'w')
     f.write(mapping_file.encode('utf8'))
     f.close()

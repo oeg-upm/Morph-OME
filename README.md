@@ -1,6 +1,6 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3764202.svg)](https://doi.org/10.5281/zenodo.3764202)
 
-![OME](https://github.com/oeg-upm/OME/raw/master/logo.png)
+![OME](static/logo-min.png)
 
 An Online Mapping Editor to generate R2RML, RML, and YARRRML without writing a single line.
 It also supports automatic suggestions of the subject and property columns using 
@@ -40,6 +40,15 @@ For example, you can set it like that
     * (Optional)
     * To show/hide an ontology upload page (in the main page) for the autocomplete functionality
     * Default: True
+* `github_secret`:
+    * Github app secret  
+* `github_appid`:
+    * Github app ID
+* `MORPH_PATH`:
+    * The local path to morph-rdb jar to generate ttl
+* `RMLMAPPER_PATH`:
+    * The local path to rmlmapper jar to generate the ttl
+
 
 
 

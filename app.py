@@ -1,10 +1,8 @@
-import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
-
 import os
 import json
-from flask import Flask, render_template, jsonify, request, send_from_directory
+from flask import Flask, render_template, jsonify, request, send_from_directory, session, redirect
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import login_user, logout_user, login_required, LoginManager, current_user
 from werkzeug.utils import secure_filename
 import requests
 import util
@@ -16,6 +14,12 @@ import logging
 import io
 import annotator
 import chardet
+import rdflib
+import subprocess
+import shutil
+
+
+import models
 
 
 if 'UPLOAD_ONTOLOGY' in os.environ:
@@ -39,30 +43,169 @@ def set_config(logger, logdir=""):
 logger = logging.getLogger(__name__)
 # set_config(logger)
 
+
 app = Flask(__name__)
+app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 
 BASE_DIR = os.path.dirname(app.instance_path)
 DATA_DIR = os.path.join(BASE_DIR, 'data')
 UPLOAD_DIR = os.path.join(BASE_DIR, 'upload')
+KG_DIR = os.path.join(BASE_DIR, 'kg')
 DOWNLOAD = False
 
 set_config(logger, os.path.join(BASE_DIR, 'ome.log'))
 
+# SQL
+print('sqlite:///'+BASE_DIR+'/test.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///'+BASE_DIR+'/test.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = models.db
+db.init_app(app)
+app.app_context().push()
+db.create_all()
 
-@app.route("/")
-def home():
+
+# Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    print("Trying to fetch user with id: " + str(user_id))
+    return models.User.query.get(int(user_id))
+
+
+def get_datasets():
     datasets = []
-    print("datadir: " + DATA_DIR)
+    # print("datadir: " + DATA_DIR)
     for f in os.listdir(DATA_DIR):
         fdir = os.path.join(DATA_DIR, f)
-        print("checking f: " + fdir)
+        # print("checking f: " + fdir)
         if os.path.isdir(fdir):
-            print("isdir: " + fdir)
+            # print("is dir: " + fdir)
             if os.path.exists(os.path.join(fdir, 'classes.txt')) and os.path.exists(
                     os.path.join(fdir, 'properties.txt')):
                 datasets.append(f)
-    print(datasets)
-    return render_template('index.html', datasets=datasets, UPLOAD_ONTOLOGY=UPLOAD_ONTOLOGY)
+    # print(datasets)
+    return datasets
+
+
+@app.route("/")
+def home():
+    # datasets = []
+    # print("datadir: " + DATA_DIR)
+    # for f in os.listdir(DATA_DIR):
+    #     fdir = os.path.join(DATA_DIR, f)
+    #     print("checking f: " + fdir)
+    #     if os.path.isdir(fdir):
+    #         print("is dir: " + fdir)
+    #         if os.path.exists(os.path.join(fdir, 'classes.txt')) and os.path.exists(
+    #                 os.path.join(fdir, 'properties.txt')):
+    #             datasets.append(f)
+    # print(datasets)
+    return render_template('index.html', datasets=get_datasets())
+
+
+@app.route("/ontologies", methods=["POST", "GET"])
+def ontologies_view():
+    if request.method=="POST":
+        pass
+    else:
+        datasets = get_datasets()
+        # datasets = []
+        return render_template('ontologies.html', datasets=datasets, UPLOAD_ONTOLOGY=UPLOAD_ONTOLOGY)
+
+
+@app.route("/logout")
+def logout_view():
+    logout_user()
+    return render_template('msg.html', msg="Logged out")
+
+
+@app.route("/current")
+def current_view():
+    return render_template('user.html')
+
+
+@app.route("/callback")
+def callback_view():
+    if'state' in session:
+        if 'state' in request.args:
+            if session['state']== request.args.get('state'):
+                print("State match")
+                if 'code' in request.args:
+                    session['code'] = request.args.get('code')
+                    data = {
+                        'client_id': os.environ['github_appid'],
+                        'client_secret': os.environ['github_secret'],
+                        'code': session['code'],
+                        'state': session['state']
+                    }
+                    response = requests.post('https://github.com/login/oauth/access_token', data=data)
+                    print("response status code: "+str(response.status_code))
+                    print("response content: "+str(response.text))
+                    try:
+                        session['access_token'] = response.text.split('&')[0].split('=')[1]
+                        print("got access token")
+                        headers = {
+                            "Authorization": "token %s" % session['access_token']
+                        }
+                        response = requests.get("https://api.github.com/user", headers=headers)
+                        try:
+                            j = response.json()
+                            print("user info: ")
+                            print(j)
+                            session['avatar'] = j['avatar_url']
+                            user = models.User.query.filter_by(username=j['login']).first()
+                            if user is None:
+                                print("Creating a new user")
+                                user = models.User(username=j['login'])
+                                group = models.Group(name=j['login']+"-Group")
+                                # user_group_repl = models.ManyUserGroup(user=user.id, group=group.id)
+                                db.session.add(user)
+                                # db.session.commit()
+                                db.session.add(group)
+                                # db.session.commit()
+                                # db.session.add(user_group_repl)
+                                db.session.commit()
+                                user_group_repl = models.ManyUserGroup(user=user.id, group=group.id)
+                                db.session.add(user_group_repl)
+                                db.session.commit()
+
+                            else:
+                                print("Login an existing user")
+                            login_user(user, remember=True)
+                            return render_template('msg.html', msg='Logged in successfully')
+                        except Exception as e:
+                            print("error fetching user info from GitHub")
+                            print("Exception: " + str(e))
+                    except Exception as e:
+                        print("error getting the access token")
+                        print("Exception: "+str(e))
+                else:
+                    print("code is not passed in GitHub response")
+            else:
+                print("state mismatch: <%s> and <%s>" % (session['state'], request.args.get('state')))
+        else:
+            print("state is not passed in Github response")
+    else:
+        print("Missing state")
+    return render_template('msg.html', error_msg="Security error. Try to login again")
+
+
+def get_random_string(length):
+    # With combination of lower and upper case
+    result_str = ''.join(random.choice(string.ascii_letters) for i in range(length))
+    # print random string
+    print(result_str)
+
+
+@app.route("/login")
+def login_view():
+    session['state'] = get_random_text(10)
+    print("Generated state: "+session['state'])
+    return redirect("https://github.com/login/oauth/authorize?client_id=%s&state=%s" % (os.environ['github_appid'], session['state']))
 
 
 @app.route("/predict_subject", methods=['POST'])
@@ -176,7 +319,7 @@ def editor():
             fname = util.get_random_string(4) + "-" + filename
             uploaded_file_dir = os.path.join(UPLOAD_DIR, fname)
             f = open(uploaded_file_dir, 'w')
-            f.write(r.content)
+            f.write(r.text)
             f.close()
         else:
             error_msg = "the source %s can not be accessed" % source
@@ -193,16 +336,13 @@ def editor():
     logger.debug(str(headers))
     headers_str_test = headers[-1]#str(headers)
     logger.debug("headers string: ")
-    logger.debug(headers_str_test)
-    detected_encoding = chardet.detect(headers_str_test)['encoding']
-    logger.debug("detected encoding %s " % (detected_encoding))
-    decoded_s = headers_str_test.decode(detected_encoding)
-    headers_str_test = decoded_s.encode('utf-8')
-    logger.debug("headers utf-8 encoded: ")
-    logger.debug(headers_str_test)
-
-
-
+    # logger.debug(headers_str_test)
+    # detected_encoding = chardet.detect(headers_str_test)['encoding']
+    # logger.debug("detected encoding %s " % (detected_encoding))
+    # decoded_s = headers_str_test.decode(detected_encoding)
+    # headers_str_test = decoded_s.encode('utf-8')
+    # logger.debug("headers utf-8 encoded: ")
+    # logger.debug(headers_str_test)
 
     labels = util.get_classes_as_txt(ontologies, data_dir=DATA_DIR)
     # f = open(os.path.join(DATA_DIR, "labels.txt"))
@@ -246,6 +386,95 @@ def get_properties_autocomplete():
         return jsonify({'properties': properties})
 
 
+@app.route("/sparql", methods=['POST', 'GET'])
+def sparql_view():
+    if request.method == "GET":
+        if 'id' in request.args:
+            print("Getting ID from GET")
+            return render_template('sparql.html', kgid=request.args.get('id'))
+        else:
+            print("Missing ID from GET")
+            return render_template('msg.html', error_msg="KG ID is missing")
+    else:
+        if 'kgid' in request.form and request.form['kgid'] != "":
+            if 'query' in request.form:
+                query = request.form['query']
+                print("Query: ")
+                print(query)
+                print("request form: ")
+                print(request.form)
+                print("kgid")
+                print(request.form['kgid'])
+                fname = str(request.form['kgid']) + ".ttl"
+                fpath = os.path.join(KG_DIR, fname)
+
+                if not os.path.exists(fpath):
+                    return jsonify(error="Invalid KG id"), 400
+
+                g = rdflib.Graph()
+                print("will parse: "+fpath)
+                g.parse(fpath, format="ttl")
+                print("query kg with: "+query)
+                qres = g.query(query)
+                results = []
+                for row in qres:
+                    print(row)
+                    results.append([str(v) for v in row])
+
+                print("results: ")
+                print(results)
+                return jsonify(results=results)
+                # return results
+
+            else:
+                print("Missing query")
+                return jsonify(error="missing query"), 400
+
+        else:
+            print("Missing id")
+            return jsonify(error="missing id"), 400
+
+
+def generate_kg_rml(mapping_fdir):
+    """
+    :param mapping_fdir: The directory to the generated fdir
+    :return:
+    """
+    if not os.path.exists(KG_DIR):
+        os.makedirs(KG_DIR)
+    if current_user.is_authenticated:
+        print("user is authenticated: "+current_user.username)
+        if 'RMLMAPPER_PATH' in os.environ:
+            jar_path = os.environ['RMLMAPPER_PATH']
+            print("jar_path exists: "+jar_path)
+
+            user_group_rel = models.ManyUserGroup.query.filter_by(user=current_user.id).first()
+            if user_group_rel:
+                group = models.Group.query.filter_by(id=user_group_rel.group).first()
+                if group:
+                    kg = models.KG(group=group.id, name=get_random_text(n=10))
+                    db.session.add(kg)
+                    db.session.commit()
+                    fname = str(kg.id)
+                else:
+                    print("group does not exists")
+                    fname = "test1"
+            else:
+                print("user group membership does not exists")
+                fname = "test2"
+            out_path = os.path.join(KG_DIR, fname+".ttl")
+
+            cmd = """cd "%s" ;java -jar "%s" -m "%s" -o "%s" """ % (UPLOAD_DIR, jar_path, mapping_fdir, out_path)
+            print("cmd: %s" % cmd)
+            subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
+            return fname
+        else:
+            print("MORPH_PATH is missing")
+    else:
+        print("user is not authenticated")
+    return None
+
+
 @app.route("/generate_mapping", methods=['POST'])
 def generate_mapping():
     if 'entity_class' in request.form and 'entity_column' in request.form and 'file_name' in request.form and 'mapping_lang' in request.form:
@@ -253,10 +482,12 @@ def generate_mapping():
         entity_column = request.form['entity_column']
         file_name = request.form['file_name']
         mapping_lang = request.form['mapping_lang']
-        # print "request form: "
-        # print list(request.form.keys())
+        print("request form list: ")
+        print(list(request.form.keys()))
+        print("request form: ")
+        print(request.form.keys())
         mappings = []
-        for i in range(len(request.form.keys())):
+        for i in range(len(list(request.form.keys()))):
             key = 'form_key_' + str(i)
             val = 'form_val_' + str(i)
             # print "key = ", key
@@ -282,6 +513,13 @@ def generate_mapping():
             util.generate_rml_mappings_csv(mapping_file_dir, file_name, entity_class, entity_column, mappings)
         elif mapping_lang == "yarrrml":
             util.generate_yarrrml_mappings_csv(mapping_file_dir, file_name, entity_class, entity_column, mappings)
+        elif mapping_lang == "kg-rml":
+            util.generate_rml_mappings_csv(mapping_file_dir, file_name, entity_class, entity_column, mappings)
+            kgid = generate_kg_rml(mapping_file_dir)
+            if kgid is None:
+                return render_template('msg.html', error_msg="Error generating KG")
+            else:
+                return render_template('msg.html', msg="Generated the KG.", html="<a href='/sparql?id=%s'>Go to SPARQL</a>" % (str(kgid)))
         else:
             return render_template('msg.html', msg="Invalid mapping language", msg_title="Error")
         f = open(mapping_file_dir)

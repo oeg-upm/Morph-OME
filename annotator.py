@@ -22,28 +22,26 @@ def annotate_subject(source_dir, subject_col_id, top_k=3, logger=None):
         'alpha': 0.9,
         'k': top_k
     }
-    # data['source'] = (source_dir.split(os.sep)[-1], open(source_dir), 'text/plain')
-    # f = open(source_dir)
-    # file_content = f.read()
-    # data['source'] = (io.BytesIO(file_content), source_dir.split(os.sep)[-1])
-    # response = requests.post(TADA_HOST+'/subject', data=data)
-    # headers = {'Content-type': 'multipart/form-data'}
-    # response = requests.post(TADA_HOST+'/subject', data=data, headers=headers)
-    files = {
-        'source': (source_dir.split(os.sep)[-1], open(source_dir), 'text/plain')
-    }
-    response = requests.post(TADA_HOST+'/subject', data=data, files=files)
+
+    files = [
+        ('source', (
+            source_dir.split(os.sep)[-1],
+            open(source_dir),
+            'text/plain'))
+    ]
+
+    response = requests.request("POST", TADA_HOST+'/subject', data=data, files=files)
+
     if response.status_code == 200:
-        print("entities: ")
+        print("-- entities: ")
         print(response.json())
         logger.debug("annotate_subject> entities ")
         logger.debug(str(response.json()))
         entities = response.json()['entities']
     else:
+        print("-- ERROR: status code: "+str(response.status_code))
         entities = []
-        # print("response: ")
-        # print(response.content)
-        # print(response.status_code)
+
         try:
             print(response.json())
             logger.debug(str(response.json()))
@@ -65,13 +63,7 @@ def annotate_property(source_dir, subject_col_id, top_k=3, logger=None):
         'subject_col_id': subject_col_id,
         'k': top_k,
     }
-    # data['source'] = (source_dir.split(os.sep)[-1], open(source_dir), 'text/plain')
-    # f = open(source_dir)
-    # file_content = f.read()
-    # data['source'] = (io.BytesIO(file_content), source_dir.split(os.sep)[-1])
-    # response = requests.post(TADA_HOST+'/subject', data=data)
-    # headers = {'Content-type': 'multipart/form-data'}
-    # response = requests.post(TADA_HOST+'/subject', data=data, headers=headers)
+
     files = {
         'source': (source_dir.split(os.sep)[-1], open(source_dir), 'text/plain')
     }
@@ -87,8 +79,9 @@ def annotate_property(source_dir, subject_col_id, top_k=3, logger=None):
         try:
             print(response.json())
             logger.debug(str(response.json()))
-        except:
+        except Exception as e:
             print("No JSON")
+            print("Exception: "+str(e))
             logger.debug("annotate_property> No JSON")
             traceback.print_exc()
     return pairs
