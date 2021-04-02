@@ -2,6 +2,7 @@
 *.db
 data/*
 upload/*
+ontology/*
 kg
 
 *.csv

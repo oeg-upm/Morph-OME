@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 {%block content%}
+
+<div class="ui segment">
+
 <form class="ui form" action="editor" method=post enctype=multipart/form-data>
   <div class="field">
     <label>Enter the URL of your CSV file</label>
@@ -10,7 +13,11 @@
     <input type="file" name="sourcefile"/>
   </div>
   <div class="field">
+
     <label for="ontologies">Choose one or more ontologies:</label>
+         <div style="font-size: 10px;font-style: italic;">
+  (These ontologies will be used for auto-complete)
+</div>
     <select id="ontologies" name="ontologies" multiple>
       {%for d in datasets%}
       <option value="{{d}}">{{d}}</option>
@@ -21,6 +28,7 @@
   <button class="ui button" type="submit">Open With Editor</button>
 </form>
 
+</div>
 
 {%endblock%}
 

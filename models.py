@@ -39,5 +39,10 @@ class KG(db.Model):
         return '<KG %r>' % self.name
 
 
+class Ontology(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(220), unique=False, nullable=False)
+    group = db.Column(db.Integer, db.ForeignKey('group.id'), nullable=False)
+
 
 # db.create_all()

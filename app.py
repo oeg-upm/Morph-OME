@@ -51,6 +51,7 @@ BASE_DIR = os.path.dirname(app.instance_path)
 DATA_DIR = os.path.join(BASE_DIR, 'data')
 UPLOAD_DIR = os.path.join(BASE_DIR, 'upload')
 KG_DIR = os.path.join(BASE_DIR, 'kg')
+ONT_DIR = os.path.join(BASE_DIR, 'ontology')
 DOWNLOAD = False
 
 set_config(logger, os.path.join(BASE_DIR, 'ome.log'))
@@ -76,6 +77,12 @@ def load_user(user_id):
     return models.User.query.get(int(user_id))
 
 
+# def user_in_group(user, group_id):
+#     a = models.ManyUserGroup.query.filter_by(user=user.id, group=group_id).first()
+#     return a is None
+
+
+# get public ontologies
 def get_datasets():
     datasets = []
     # print("datadir: " + DATA_DIR)
@@ -107,14 +114,88 @@ def home():
     return render_template('index.html', datasets=get_datasets())
 
 
-@app.route("/ontologies", methods=["POST", "GET"])
-def ontologies_view():
+@app.route("/public-ontologies", methods=["POST", "GET"])
+def public_ontologies_view():
+    if not UPLOAD_ONTOLOGY:
+        return render_template('msg.html', msg="this function is disabled for now", msg_title="Error")
     if request.method=="POST":
-        pass
+        if 'name' not in request.form:
+            return render_template('msg.html', msg="Ontology name is not passed", msg_title="Error")
+        if 'sourcefile' in request.files:
+            sourcefile = request.files['sourcefile']
+            if sourcefile.filename != "":
+                filename = secure_filename(sourcefile.filename)
+                uploaded_file_dir = os.path.join(UPLOAD_DIR, filename)
+                print("to save the file to: " + uploaded_file_dir)
+                if not os.path.exists(UPLOAD_DIR):
+                    os.mkdir(UPLOAD_DIR)
+                sourcefile.save(uploaded_file_dir)
+                generate_lookup.generate_lookup(uploaded_file_dir, request.form['name'].strip(), data_dir=DATA_DIR)
+                return render_template('msg.html', msg="Ontology added successfully", msg_title="Success")
+            else:
+                print("blank source file")
+                return render_template('msg.html', msg="Ontology file is not passed", msg_title="Error")
+        else:
+            return render_template('msg.html', msg="Ontology file is not passed", msg_title="Error")
     else:
         datasets = get_datasets()
         # datasets = []
         return render_template('ontologies.html', datasets=datasets, UPLOAD_ONTOLOGY=UPLOAD_ONTOLOGY)
+
+
+@app.route("/ontologies", methods=["POST", "GET"])
+@login_required
+def ontologies_view():
+    if request.method=="POST":
+        if 'name' not in request.form:
+            return render_template('msg.html', msg="Ontology name is not passed", msg_title="Error")
+        if 'group' not in request.form:
+            return render_template('msg.html', msg="No group is passed", msg_title="Error")
+        if 'sourcefile' not in request.files:
+            return render_template('msg.html', msg="Ontology file is not passed", msg_title="Error")
+        try:
+            group_id = int(request.form['group'])
+        except Exception as e:
+            print("Exception: "+str(e))
+            return render_template('msg.html', msg="Invalid group is passed", msg_title="Error")
+
+        user_group_membership = models.ManyUserGroup.query.filter_by(user=current_user.id, group=group_id).first()
+        if user_group_membership is None:
+            return render_template('msg.html', msg="Invalid group", msg_title="Error")
+
+        sourcefile = request.files['sourcefile']
+
+        ont = models.Ontology(group=group_id, name=request.form['name'].strip())
+        db.session.add(ont)
+        db.session.commit()
+
+        if sourcefile.filename != "":
+            if not os.path.exists(UPLOAD_DIR):
+                os.mkdir(UPLOAD_DIR)
+            if not os.path.exists(ONT_DIR):
+                os.mkdir(ONT_DIR)
+            uploaded_file_dir = os.path.join(UPLOAD_DIR, str(ont.id)+".txt")
+            print("to save the file to: " + uploaded_file_dir)
+            sourcefile.save(uploaded_file_dir)
+            generate_lookup.generate_lookup(uploaded_file_dir, request.form['name'].strip(), data_dir=ONT_DIR)
+            return render_template('msg.html', msg="Ontology added successfully", msg_title="Success")
+        else:
+            print("blank source file")
+            return render_template('msg.html', msg="Ontology file is not passed", msg_title="Error")
+    else:
+        groups = models.ManyUserGroup.query.filter_by(user=current_user.id).all()
+        l = []
+        groups_obj = []
+        for gr in groups:
+            onts = models.Ontology.query.filter_by(group=gr.id).all()
+            grobj = models.Group.query.filter_by(id=gr.id).first()
+            groups_obj.append(grobj)
+            for o in onts:
+                l.append({'group': grobj.name+" ("+str(gr.id)+")", 'ontology': o.name})
+        return render_template('ontologies.html', ont_group_pairs=l, groups=groups_obj)
+        # datasets = get_datasets()
+        # datasets = []
+        # return render_template('ontologies.html', datasets=datasets, UPLOAD_ONTOLOGY=UPLOAD_ONTOLOGY)
 
 
 @app.route("/logout")
@@ -549,26 +630,26 @@ def get_random_text(n=4):
     return ''.join([random.choice(string.ascii_letters + string.digits) for _ in range(n)])
 
 
-@app.route("/add_ontology", methods=["POST"])
-def add_ontology():
-    if 'name' not in request.form:
-        return render_template('msg.html', msg="Ontology name is not passed", msg_title="Error")
-    if 'sourcefile' in request.files:
-        sourcefile = request.files['sourcefile']
-        if sourcefile.filename != "":
-            filename = secure_filename(sourcefile.filename)
-            uploaded_file_dir = os.path.join(UPLOAD_DIR, filename)
-            print("to save the file to: " + uploaded_file_dir)
-            if not os.path.exists(UPLOAD_DIR):
-                os.mkdir(UPLOAD_DIR)
-            sourcefile.save(uploaded_file_dir)
-            generate_lookup.generate_lookup(uploaded_file_dir, request.form['name'].strip(), data_dir=DATA_DIR)
-            return render_template('msg.html', msg="Ontology added successfully", msg_title="Success")
-        else:
-            print("blank source file")
-            return render_template('msg.html', msg="Ontology file is not passed", msg_title="Error")
-    else:
-        return render_template('msg.html', msg="Ontology file is not passed", msg_title="Error")
+# @app.route("/add_ontology", methods=["POST"])
+# def add_ontology():
+#     if 'name' not in request.form:
+#         return render_template('msg.html', msg="Ontology name is not passed", msg_title="Error")
+#     if 'sourcefile' in request.files:
+#         sourcefile = request.files['sourcefile']
+#         if sourcefile.filename != "":
+#             filename = secure_filename(sourcefile.filename)
+#             uploaded_file_dir = os.path.join(UPLOAD_DIR, filename)
+#             print("to save the file to: " + uploaded_file_dir)
+#             if not os.path.exists(UPLOAD_DIR):
+#                 os.mkdir(UPLOAD_DIR)
+#             sourcefile.save(uploaded_file_dir)
+#             generate_lookup.generate_lookup(uploaded_file_dir, request.form['name'].strip(), data_dir=DATA_DIR)
+#             return render_template('msg.html', msg="Ontology added successfully", msg_title="Success")
+#         else:
+#             print("blank source file")
+#             return render_template('msg.html', msg="Ontology file is not passed", msg_title="Error")
+#     else:
+#         return render_template('msg.html', msg="Ontology file is not passed", msg_title="Error")
 
 
 if __name__ == '__main__':

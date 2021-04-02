@@ -5,9 +5,9 @@
 <div class="ui segment">
 
 
-{%if not ont_group_pairs%}
+{%if not datasets%}
 <p>
-    You have no ontologies. You can upload your own.
+    There are not ontologies uploaded to the system.
 </p><br>
 
     {%else%}
@@ -18,14 +18,13 @@
     {%endif%}
 
 <div class="ui cards">
-      {%for d in ont_group_pairs%}
+      {%for d in datasets%}
 
 <div class="card">
   <div class="content">
       <div class="header">
-        {{d.ontology}}
+        {{d}}
       </div>
-      {{d.group}}
   </div>
 </div>
 
@@ -35,22 +34,14 @@
     </div>
 
 
+{%if UPLOAD_ONTOLOGY%}
 <hr>
 
 <div class="ui segment">
 
     <h3> To upload an ontology: </h3>
 
-<form class="ui form"  method=post enctype=multipart/form-data>
-    <div class="field">
-        <label>Group</label>
-    <select name="group">
-        {%for gr in groups%}
-      <option value="{{gr.id}}">{{gr.name}}</option>
-        {%endfor%}
-    </select>
-  </div>
-
+<form class="ui form" action="add_ontology" method=post enctype=multipart/form-data>
   <div class="field">
     <label>Upload your Ontology (xml or ttl)</label>
     <input type="file" name="sourcefile"/>
@@ -63,6 +54,7 @@
 </form>
 
 </div>
+{%endif%}
 
 
 {%endblock%}

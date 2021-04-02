@@ -27,14 +27,17 @@
   <a class="item" href="/">
     Home
   </a>
-  <a class="item" href="ontologies">
-    Ontologies
-  </a>
-  <a class="item">
-    Friends
-  </a>
+
+  <!--<a class="item">-->
+    <!--Friends-->
+  <!--</a>-->
 
     {%if current_user.is_authenticated%}
+
+      <a class="item" href="ontologies">
+    My Ontologies
+  </a>
+
   <div class="right menu">
     <a class="ui item" href="/logout">
         <img src="{{session['avatar']}}"  width="25px"> <p> </p> {{ current_user.username }} ( Logout? )
