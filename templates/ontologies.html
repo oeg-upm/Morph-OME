@@ -22,6 +22,16 @@
 
 <div class="card">
   <div class="content">
+      <!--<div class="ui right floated">-->
+      <!--<i class="trash alternate icon"></i>-->
+      <!--</div>-->
+       <form id="form-{{d.ontology_id}}" action="/delete-ontology" method="POST">
+           <input type="hidden" name="ontology" value="{{d.ontology_id}}"/>
+                     <!--<button class="times icon ui right floated"></button>-->
+          <i class="times icon ui right floated" onclick='document.getElementById("form-{{d.ontology_id}}").submit()'></i>
+       </form>
+<!--<i class="times circle icon"></i>-->
+<!--<i class="times circle outline icon"></i>-->
       <div class="header">
         {{d.ontology}}
       </div>

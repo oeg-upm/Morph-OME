@@ -2,7 +2,6 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 
 db = SQLAlchemy()
-# db.create_all()
 
 
 class User(UserMixin, db.Model):
@@ -44,5 +43,5 @@ class Ontology(db.Model):
     name = db.Column(db.String(220), unique=False, nullable=False)
     group = db.Column(db.Integer, db.ForeignKey('group.id'), nullable=False)
 
-
-# db.create_all()
+    def __repr__(self):
+        return '<Ontology %r>' % self.name

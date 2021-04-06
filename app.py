@@ -143,10 +143,41 @@ def public_ontologies_view():
         return render_template('ontologies.html', datasets=datasets, UPLOAD_ONTOLOGY=UPLOAD_ONTOLOGY)
 
 
+@app.route("/delete-ontology", methods=["POST"])
+@login_required
+def delete_ontology_view():
+    try:
+        if 'ontology' in request.form:
+            ontology_id_str = request.form['ontology']
+            ontology_id = int(ontology_id_str)
+            ontology = models.Ontology.query.filter_by(id=ontology_id).first()
+            if ontology:
+                print("ontology is found")
+                group_id = ontology.group
+                u_g_mem = models.ManyUserGroup.query.filter_by(user=current_user.id, group=group_id).first()
+                if u_g_mem:
+                    print("memebership is found")
+                    db.session.delete(ontology)
+                    db.session.commit()
+
+                    try:
+                        shutil.rmtree(os.path.join(ONT_DIR, ontology_id_str))
+                    except Exception as e:
+                        print("Exception in deleting the ontology: "+str(e))
+
+                    return render_template('msg.html', msg="Ontology is deleted successfully!", msg_title="Success")
+            return render_template('msg.html', msg="The ontology does not belong to this user", msg_title="Error")
+        else:
+            return render_template('msg.html', msg="Missing ontology", msg_title="Error")
+    except Exception as e:
+        print("Exception: "+str(e))
+        return render_template('msg.html', msg="Internal error", msg_title="Error")
+
+
 @app.route("/ontologies", methods=["POST", "GET"])
 @login_required
 def ontologies_view():
-    if request.method=="POST":
+    if request.method == "POST":
         if 'name' not in request.form:
             return render_template('msg.html', msg="Ontology name is not passed", msg_title="Error")
         if 'group' not in request.form:
@@ -177,7 +208,8 @@ def ontologies_view():
             uploaded_file_dir = os.path.join(UPLOAD_DIR, str(ont.id)+".txt")
             print("to save the file to: " + uploaded_file_dir)
             sourcefile.save(uploaded_file_dir)
-            generate_lookup.generate_lookup(uploaded_file_dir, request.form['name'].strip(), data_dir=ONT_DIR)
+            # generate_lookup.generate_lookup(uploaded_file_dir, request.form['name'].strip(), data_dir=ONT_DIR)
+            generate_lookup.generate_lookup(uploaded_file_dir, str(ont.id), data_dir=ONT_DIR)
             return render_template('msg.html', msg="Ontology added successfully", msg_title="Success")
         else:
             print("blank source file")
@@ -191,7 +223,7 @@ def ontologies_view():
             grobj = models.Group.query.filter_by(id=gr.id).first()
             groups_obj.append(grobj)
             for o in onts:
-                l.append({'group': grobj.name+" ("+str(gr.id)+")", 'ontology': o.name})
+                l.append({'group': grobj.name+" ("+str(gr.id)+")", 'ontology': o.name, 'ontology_id': o.id})
         return render_template('ontologies.html', ont_group_pairs=l, groups=groups_obj)
         # datasets = get_datasets()
         # datasets = []
@@ -426,6 +458,8 @@ def editor():
     # logger.debug(headers_str_test)
 
     labels = util.get_classes_as_txt(ontologies, data_dir=DATA_DIR)
+    # if current_user.is_authenticated:
+    #     labels += util.get_classes_as_txt(ontologies, data_dir=ONT_DIR)
     # f = open(os.path.join(DATA_DIR, "labels.txt"))
     return render_template('editor.html', labels_txt=labels, ontologies_txt=",".join(ontologies), headers=headers,
                            callback=callback_url, file_name=fname, error_msg=error_msg, warning_msg=warning_msg)
@@ -659,3 +693,7 @@ if __name__ == '__main__':
         app.run(debug=True, host=sys.argv[1], port=int(sys.argv[2]))
     else:
         app.run(debug=True)
+
+
+
+
