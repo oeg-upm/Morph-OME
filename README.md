@@ -7,6 +7,7 @@ It also supports automatic suggestions of the subject and property columns using
 the APIs of [tada_web](https://github.com/oeg-upm/tada-web).
 
 
+
 # Run with Docker
 1. `sh run_docker.sh`
 2. In the browser visit `http://127.0.0.1:5000`
@@ -32,6 +33,8 @@ For example, you can set it like that
 
 
 # Environment Variables
+* `SECRET_KEY`:
+    * A random text
 * `TADA_HOST`:
     * (Optional)
     * The URL of TADA APIs. If it is missing, the class and properties won't be annotated automatically
@@ -49,6 +52,17 @@ For example, you can set it like that
 * `RMLMAPPER_PATH`:
     * The local path to rmlmapper jar to generate the ttl
 
+
+## To activate_this.py 
+You can add these environment variables to `activate_this.py` in the virtualenv bin directory.
+```
+os.environ['SECRET_KEY']=""
+os.environ['github_appid']=""
+os.environ['github_secret']=""
+os.environ['UPLOAD_ONTOLOGY']="false"
+os.environ['RMLMAPPER_PATH']=""
+os.environ['TADA_HOST']=""
+```
 
 
 

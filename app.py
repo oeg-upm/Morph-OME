@@ -206,7 +206,7 @@ def home():
         traceback.print_exc()
 
     return render_template('home.html', kgs=[{"id": "dbpedia", "name": "English DBpedia (version 2016-04)"}],
-                           ontologies=public_ontologies + private_ontologies,
+                           ontologies=public_ontologies + private_ontologies, UPLOAD_ONTOLOGY=UPLOAD_ONTOLOGY,
                            max_kb=app.config['MAX_CONTENT_LENGTH'] / 1024)
 
 
@@ -789,26 +789,28 @@ def get_random_text(n=4):
     return ''.join([random.choice(string.ascii_letters + string.digits) for _ in range(n)])
 
 
-# @app.route("/add_ontology", methods=["POST"])
-# def add_ontology():
-#     if 'name' not in request.form:
-#         return render_template('msg.html', msg="Ontology name is not passed", msg_title="Error")
-#     if 'sourcefile' in request.files:
-#         sourcefile = request.files['sourcefile']
-#         if sourcefile.filename != "":
-#             filename = secure_filename(sourcefile.filename)
-#             uploaded_file_dir = os.path.join(UPLOAD_DIR, filename)
-#             print("to save the file to: " + uploaded_file_dir)
-#             if not os.path.exists(UPLOAD_DIR):
-#                 os.mkdir(UPLOAD_DIR)
-#             sourcefile.save(uploaded_file_dir)
-#             generate_lookup.generate_lookup(uploaded_file_dir, request.form['name'].strip(), data_dir=DATA_DIR)
-#             return render_template('msg.html', msg="Ontology added successfully", msg_title="Success")
-#         else:
-#             print("blank source file")
-#             return render_template('msg.html', msg="Ontology file is not passed", msg_title="Error")
-#     else:
-#         return render_template('msg.html', msg="Ontology file is not passed", msg_title="Error")
+@app.route("/add_ontology", methods=["POST"])
+def add_ontology():
+    if not UPLOAD_ONTOLOGY:
+        return render_template('msg.html', msg="Uploading ontologies for all users is not allowed", msg_title="Error")
+    if 'name' not in request.form:
+        return render_template('msg.html', msg="Ontology name is not passed", msg_title="Error")
+    if 'sourcefile' in request.files:
+        sourcefile = request.files['sourcefile']
+        if sourcefile.filename != "":
+            filename = secure_filename(sourcefile.filename)
+            uploaded_file_dir = os.path.join(UPLOAD_DIR, filename)
+            print("to save the file to: " + uploaded_file_dir)
+            if not os.path.exists(UPLOAD_DIR):
+                os.mkdir(UPLOAD_DIR)
+            sourcefile.save(uploaded_file_dir)
+            generate_lookup.generate_lookup(uploaded_file_dir, request.form['name'].strip(), data_dir=DATA_DIR)
+            return render_template('msg.html', msg="Ontology added successfully", msg_title="Success")
+        else:
+            print("blank source file")
+            return render_template('msg.html', msg="Ontology file is not passed", msg_title="Error")
+    else:
+        return render_template('msg.html', msg="Ontology file is not passed", msg_title="Error")
 
 
 if __name__ == '__main__':
