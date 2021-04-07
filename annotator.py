@@ -19,7 +19,7 @@ def annotate_subject(source_dir, subject_col_id, top_k=3, logger=None):
     """
     data = {
         'col_id': subject_col_id,
-        'alpha': 0.9,
+        'alpha': 0.4,
         'k': top_k
     }
 

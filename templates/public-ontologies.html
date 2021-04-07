@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block content%}
+
+
+<div class="ui segment">
+
+
+{%if not datasets%}
+<p>
+    There are not ontologies uploaded to the system.
+</p><br>
+
+    {%else%}
+    <h3>
+        Available ontologies:
+</h3><br>
+
+    {%endif%}
+
+<div class="ui cards">
+      {%for d in datasets%}
+
+<div class="card">
+  <div class="content">
+      <div class="header">
+        {{d}}
+      </div>
+  </div>
+</div>
+
+      {%endfor%}
+</div>
+
+    </div>
+
+
+{%if UPLOAD_ONTOLOGY%}
+<hr>
+
+<div class="ui segment">
+
+    <h3> To upload an ontology: </h3>
+
+<form class="ui form" action="add_ontology" method=post enctype=multipart/form-data>
+  <div class="field">
+    <label>Upload your Ontology (xml or ttl)</label>
+    <input type="file" name="sourcefile"/>
+  </div>
+    <div class="field">
+    <label>Ontology name</label>
+    <input type="text" name="name"/>
+  </div>
+  <button class="ui button" type="submit">Add</button>
+</form>
+
+</div>
+{%endif%}
+
+
+{%endblock%}

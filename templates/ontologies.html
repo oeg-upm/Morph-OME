@@ -5,9 +5,9 @@
 <div class="ui segment">
 
 
-{%if not datasets%}
+{%if not ont_group_pairs%}
 <p>
-    There are not ontologies uploaded to the system.
+    You have no ontologies. You can upload your own.
 </p><br>
 
     {%else%}
@@ -18,13 +18,24 @@
     {%endif%}
 
 <div class="ui cards">
-      {%for d in datasets%}
+      {%for d in ont_group_pairs%}
 
 <div class="card">
   <div class="content">
+      <!--<div class="ui right floated">-->
+      <!--<i class="trash alternate icon"></i>-->
+      <!--</div>-->
+       <form id="form-{{d.ontology_id}}" action="/delete-ontology" method="POST">
+           <input type="hidden" name="ontology" value="{{d.ontology_id}}"/>
+                     <!--<button class="times icon ui right floated"></button>-->
+          <i class="times icon ui right floated" onclick='document.getElementById("form-{{d.ontology_id}}").submit()'></i>
+       </form>
+<!--<i class="times circle icon"></i>-->
+<!--<i class="times circle outline icon"></i>-->
       <div class="header">
-        {{d}}
+        {{d.ontology}}
       </div>
+      {{d.group}}
   </div>
 </div>
 
@@ -34,14 +45,22 @@
     </div>
 
 
-{%if UPLOAD_ONTOLOGY%}
 <hr>
 
 <div class="ui segment">
 
     <h3> To upload an ontology: </h3>
 
-<form class="ui form" action="add_ontology" method=post enctype=multipart/form-data>
+<form class="ui form"  method=post enctype=multipart/form-data>
+    <div class="field">
+        <label>Group</label>
+    <select name="group">
+        {%for gr in groups%}
+      <option value="{{gr.id}}">{{gr.name}}</option>
+        {%endfor%}
+    </select>
+  </div>
+
   <div class="field">
     <label>Upload your Ontology (xml or ttl)</label>
     <input type="file" name="sourcefile"/>
@@ -54,7 +73,6 @@
 </form>
 
 </div>
-{%endif%}
 
 
 {%endblock%}

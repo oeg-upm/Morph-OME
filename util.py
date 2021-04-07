@@ -100,7 +100,8 @@ def generate_r2rml_mappings(mapping_file_dir, file_name, entity_class, entity_co
     """ % (mapping_id, table_name, entity_class, entity_column.upper(), property_column_mapping)
     print(mapping_content)
     f = open(mapping_file_dir, 'w')
-    f.write(mapping_content.encode('utf8'))
+    f.write(mapping_content)
+    # f.write(mapping_content.encode('utf8'))
     f.close()
 
 
@@ -207,7 +208,8 @@ mappings:
     print('mapping file path:')
     print(mapping_file_path)
     f = open(mapping_file_path, 'w')
-    f.write(mapping_file.encode('utf8'))
+    # f.write(mapping_file.encode('utf8'))
+    f.write(mapping_file)
     f.close()
     return mapping_file_path
 

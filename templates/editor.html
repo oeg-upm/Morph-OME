@@ -92,6 +92,7 @@
 </form>
 
 
+
 <script>
 
 $("#progressbar").hide();
@@ -133,7 +134,7 @@ var labels = [
 } );
 
 
-
+{%if kg%}
 
 $("#entity_column").change(function (){
     $("#progressbar").show(progress_speed);
@@ -174,6 +175,8 @@ $("#entity_column").change(function (){
     ;
 });
 
+{%endif%}
+
   $( function() {
     $( "#progressbar" ).progressbar({
       value: false
@@ -186,7 +189,7 @@ $( ".property" ).autocomplete({
         var filtered = []
         var prop_name, parts
         if(request.term[0] in cache){
-            console.log('cached')
+            console.log('cached: '+request.term[0])
             //console.log(cache[request.term[0]])
             for(var i=0;i<cache[request.term[0]].length;i++){
                 parts = cache[request.term[0]][i].split("/")
@@ -197,7 +200,7 @@ $( ".property" ).autocomplete({
                     filtered.push(cache[request.term[0]][i]);
                 }
                 else{
-
+                    console.log("ELSE:: "+prop_name);
                 }
             }
             console.log('filtered')
@@ -247,6 +250,7 @@ function add_predicted_properties(){
     });
 }
 
+{%if kg%}
 
 function predict_all_properties(){
                console.log("now is sending the predict properties")
@@ -271,9 +275,16 @@ function predict_all_properties(){
                 ;
 }
 
+{%else%}
+function predict_all_properties(){
+    console.log("Automatic prediction is turned off");
+}
+
+{%endif%}
 
 
 </script>
+
 
 <style>
   #progressbar .ui-progressbar-value {
