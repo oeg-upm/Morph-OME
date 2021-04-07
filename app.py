@@ -88,6 +88,8 @@ def load_user(user_id):
 def get_public_ontologies():
     datasets = []
     # print("datadir: " + DATA_DIR)
+    if not os.path.exists(DATA_DIR):
+        os.mkdir(UPLOAD_DIR)
     for f in os.listdir(DATA_DIR):
         fdir = os.path.join(DATA_DIR, f)
         # print("checking f: " + fdir)
