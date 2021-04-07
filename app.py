@@ -48,6 +48,8 @@ app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 # app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 # app.config['MAX_CONTENT_LENGTH'] = 50 * 1024  # 50 Kb
 app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024  # 1 MB/1000 KB
+if 'MAX_CONTENT_LENGTH' in os.environ:
+    app.config['MAX_CONTENT_LENGTH'] = int(os.environ['MAX_CONTENT_LENGTH'])
 
 
 BASE_DIR = os.path.dirname(app.instance_path)
