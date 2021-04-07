@@ -5,11 +5,11 @@
 
 <form class="ui form" action="editor" method=post enctype=multipart/form-data>
   <div class="field">
-    <label>Enter the URL of your CSV file</label>
+    <label>Enter the URL of your CSV file (max size is {{max_kb}} kb)</label>
     <input type="url" name="source" placeholder="http://your_csv_file_url">
   </div>
   <div class="field">
-    <label>Upload your CSV file</label>
+    <label>Upload your CSV file (max size is {{max_kb}} kb)</label>
     <input type="file" name="sourcefile"/>
   </div>
   <div class="field">
@@ -19,8 +19,23 @@
   (These ontologies will be used for auto-complete)
 </div>
     <select id="ontologies" name="ontologies" multiple>
-      {%for d in datasets%}
-      <option value="{{d}}">{{d}}</option>
+      {%for o in ontologies%}
+      <option value="{{o.id}}">{{o.name}}</option>
+      {%endfor%}
+    </select>
+  </div>
+
+
+     <div class="field">
+    <label for="kgs">Choose a training set if you want to enable automatic prediction of classes and properties</label>
+         <div style="font-size: 10px;font-style: italic;">
+  You can choose None if you don't want to enable automatic prediction
+</div>
+        <select id="kgs" name="kg" >
+           <option value="">None</option>
+
+      {%for kg in kgs%}
+      <option value="{{kg.id}}">{{kg.name}}</option>
       {%endfor%}
     </select>
   </div>

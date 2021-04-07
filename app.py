@@ -1,5 +1,6 @@
 import os
 import json
+import traceback
 from flask import Flask, render_template, jsonify, request, send_from_directory, session, redirect
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import login_user, logout_user, login_required, LoginManager, current_user
@@ -18,9 +19,7 @@ import rdflib
 import subprocess
 import shutil
 
-
 import models
-
 
 if 'UPLOAD_ONTOLOGY' in os.environ:
     UPLOAD_ONTOLOGY = os.environ['UPLOAD_ONTOLOGY'].lower() == "true"
@@ -46,6 +45,8 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
+# app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024  # 30 Kb
 
 BASE_DIR = os.path.dirname(app.instance_path)
 DATA_DIR = os.path.join(BASE_DIR, 'data')
@@ -57,14 +58,13 @@ DOWNLOAD = False
 set_config(logger, os.path.join(BASE_DIR, 'ome.log'))
 
 # SQL
-print('sqlite:///'+BASE_DIR+'/test.db')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///'+BASE_DIR+'/test.db'
+print('sqlite:///' + BASE_DIR + '/test.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + BASE_DIR + '/test.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = models.db
 db.init_app(app)
 app.app_context().push()
 db.create_all()
-
 
 # Login
 login_manager = LoginManager()
@@ -83,7 +83,7 @@ def load_user(user_id):
 
 
 # get public ontologies
-def get_datasets():
+def get_public_ontologies():
     datasets = []
     # print("datadir: " + DATA_DIR)
     for f in os.listdir(DATA_DIR):
@@ -100,25 +100,35 @@ def get_datasets():
 
 @app.route("/")
 def home():
-    # datasets = []
-    # print("datadir: " + DATA_DIR)
-    # for f in os.listdir(DATA_DIR):
-    #     fdir = os.path.join(DATA_DIR, f)
-    #     print("checking f: " + fdir)
-    #     if os.path.isdir(fdir):
-    #         print("is dir: " + fdir)
-    #         if os.path.exists(os.path.join(fdir, 'classes.txt')) and os.path.exists(
-    #                 os.path.join(fdir, 'properties.txt')):
-    #             datasets.append(f)
-    # print(datasets)
-    return render_template('index.html', datasets=get_datasets())
+    public_ontology_names = get_public_ontologies()
+    public_ontologies = []
+    private_ontologies = []
+    for po in public_ontology_names:
+        public_ontologies.append({'id': po, 'name': po})
+    try:
+        if current_user.is_authenticated:
+            memberships = models.ManyUserGroup.query.filter_by(user=current_user.id).all()
+            for mem in memberships:
+                g = models.Group.query.filter_by(id=mem.group).first()
+                g_ontologies = models.Ontology.query.filter_by(group=g.id).all()
+                for o in g_ontologies:
+                    d = {'id': o.id, 'name': o.name}
+                    private_ontologies.append(d)
+
+    except Exception as e:
+        print("Error getting user ontologies")
+        print("Exception: " + str(e))
+        traceback.print_exc()
+
+    return render_template('home.html', kgs=[{"id": "dbpedia", "name": "English DBpedia (version 2016-04)"}],
+                           ontologies=public_ontologies + private_ontologies, max_kb=app.config['MAX_CONTENT_LENGTH']/1024)
 
 
 @app.route("/public-ontologies", methods=["POST", "GET"])
 def public_ontologies_view():
     if not UPLOAD_ONTOLOGY:
         return render_template('msg.html', msg="this function is disabled for now", msg_title="Error")
-    if request.method=="POST":
+    if request.method == "POST":
         if 'name' not in request.form:
             return render_template('msg.html', msg="Ontology name is not passed", msg_title="Error")
         if 'sourcefile' in request.files:
@@ -138,7 +148,7 @@ def public_ontologies_view():
         else:
             return render_template('msg.html', msg="Ontology file is not passed", msg_title="Error")
     else:
-        datasets = get_datasets()
+        datasets = get_public_ontologies()
         # datasets = []
         return render_template('ontologies.html', datasets=datasets, UPLOAD_ONTOLOGY=UPLOAD_ONTOLOGY)
 
@@ -156,21 +166,21 @@ def delete_ontology_view():
                 group_id = ontology.group
                 u_g_mem = models.ManyUserGroup.query.filter_by(user=current_user.id, group=group_id).first()
                 if u_g_mem:
-                    print("memebership is found")
+                    print("membership is found")
                     db.session.delete(ontology)
                     db.session.commit()
 
                     try:
                         shutil.rmtree(os.path.join(ONT_DIR, ontology_id_str))
                     except Exception as e:
-                        print("Exception in deleting the ontology: "+str(e))
+                        print("Exception in deleting the ontology: " + str(e))
 
                     return render_template('msg.html', msg="Ontology is deleted successfully!", msg_title="Success")
             return render_template('msg.html', msg="The ontology does not belong to this user", msg_title="Error")
         else:
             return render_template('msg.html', msg="Missing ontology", msg_title="Error")
     except Exception as e:
-        print("Exception: "+str(e))
+        print("Exception: " + str(e))
         return render_template('msg.html', msg="Internal error", msg_title="Error")
 
 
@@ -187,7 +197,7 @@ def ontologies_view():
         try:
             group_id = int(request.form['group'])
         except Exception as e:
-            print("Exception: "+str(e))
+            print("Exception: " + str(e))
             return render_template('msg.html', msg="Invalid group is passed", msg_title="Error")
 
         user_group_membership = models.ManyUserGroup.query.filter_by(user=current_user.id, group=group_id).first()
@@ -205,7 +215,7 @@ def ontologies_view():
                 os.mkdir(UPLOAD_DIR)
             if not os.path.exists(ONT_DIR):
                 os.mkdir(ONT_DIR)
-            uploaded_file_dir = os.path.join(UPLOAD_DIR, str(ont.id)+".txt")
+            uploaded_file_dir = os.path.join(UPLOAD_DIR, str(ont.id) + ".txt")
             print("to save the file to: " + uploaded_file_dir)
             sourcefile.save(uploaded_file_dir)
             # generate_lookup.generate_lookup(uploaded_file_dir, request.form['name'].strip(), data_dir=ONT_DIR)
@@ -223,7 +233,7 @@ def ontologies_view():
             grobj = models.Group.query.filter_by(id=gr.id).first()
             groups_obj.append(grobj)
             for o in onts:
-                l.append({'group': grobj.name+" ("+str(gr.id)+")", 'ontology': o.name, 'ontology_id': o.id})
+                l.append({'group': grobj.name + " (" + str(gr.id) + ")", 'ontology': o.name, 'ontology_id': o.id})
         return render_template('ontologies.html', ont_group_pairs=l, groups=groups_obj)
         # datasets = get_datasets()
         # datasets = []
@@ -243,9 +253,9 @@ def current_view():
 
 @app.route("/callback")
 def callback_view():
-    if'state' in session:
+    if 'state' in session:
         if 'state' in request.args:
-            if session['state']== request.args.get('state'):
+            if session['state'] == request.args.get('state'):
                 print("State match")
                 if 'code' in request.args:
                     session['code'] = request.args.get('code')
@@ -256,8 +266,8 @@ def callback_view():
                         'state': session['state']
                     }
                     response = requests.post('https://github.com/login/oauth/access_token', data=data)
-                    print("response status code: "+str(response.status_code))
-                    print("response content: "+str(response.text))
+                    print("response status code: " + str(response.status_code))
+                    print("response content: " + str(response.text))
                     try:
                         session['access_token'] = response.text.split('&')[0].split('=')[1]
                         print("got access token")
@@ -274,7 +284,7 @@ def callback_view():
                             if user is None:
                                 print("Creating a new user")
                                 user = models.User(username=j['login'])
-                                group = models.Group(name=j['login']+"-Group")
+                                group = models.Group(name=j['login'] + "-Group")
                                 # user_group_repl = models.ManyUserGroup(user=user.id, group=group.id)
                                 db.session.add(user)
                                 # db.session.commit()
@@ -295,7 +305,7 @@ def callback_view():
                             print("Exception: " + str(e))
                     except Exception as e:
                         print("error getting the access token")
-                        print("Exception: "+str(e))
+                        print("Exception: " + str(e))
                 else:
                     print("code is not passed in GitHub response")
             else:
@@ -317,8 +327,9 @@ def get_random_string(length):
 @app.route("/login")
 def login_view():
     session['state'] = get_random_text(10)
-    print("Generated state: "+session['state'])
-    return redirect("https://github.com/login/oauth/authorize?client_id=%s&state=%s" % (os.environ['github_appid'], session['state']))
+    print("Generated state: " + session['state'])
+    return redirect("https://github.com/login/oauth/authorize?client_id=%s&state=%s" % (
+    os.environ['github_appid'], session['state']))
 
 
 @app.route("/predict_subject", methods=['POST'])
@@ -396,6 +407,11 @@ def editor():
         callback_url = request.form['callback']
     else:
         callback_url = ""
+    kg = None
+    if 'kg' in request.form:
+        if request.form['kg'].strip() != "":
+            kg = request.form['kg'].strip()
+
     ontologies = request.form.getlist('ontologies')
     if len(ontologies) == 0:
         return render_template('msg.html', msg="You should select at least one ontology", msg_title="Error")
@@ -447,7 +463,7 @@ def editor():
     print(headers)
     logger.debug("headers: ")
     logger.debug(str(headers))
-    headers_str_test = headers[-1]#str(headers)
+    headers_str_test = headers[-1]  # str(headers)
     logger.debug("headers string: ")
     # logger.debug(headers_str_test)
     # detected_encoding = chardet.detect(headers_str_test)['encoding']
@@ -456,12 +472,22 @@ def editor():
     # headers_str_test = decoded_s.encode('utf-8')
     # logger.debug("headers utf-8 encoded: ")
     # logger.debug(headers_str_test)
+    labels = ""
+    for o in ontologies:
+        o_labels = None
+        try:
+            o_labels = util.get_classes_as_txt([o], data_dir=DATA_DIR)
+        except:
+            o_labels = util.get_classes_as_txt([o], data_dir=ONT_DIR)
+        if o_labels:
+            labels += o_labels
+    print("labels: ")
+    print(labels)
 
-    labels = util.get_classes_as_txt(ontologies, data_dir=DATA_DIR)
     # if current_user.is_authenticated:
     #     labels += util.get_classes_as_txt(ontologies, data_dir=ONT_DIR)
     # f = open(os.path.join(DATA_DIR, "labels.txt"))
-    return render_template('editor.html', labels_txt=labels, ontologies_txt=",".join(ontologies), headers=headers,
+    return render_template('editor.html', labels_txt=labels, ontologies_txt=",".join(ontologies), headers=headers, kg=kg,
                            callback=callback_url, file_name=fname, error_msg=error_msg, warning_msg=warning_msg)
 
 
@@ -483,21 +509,32 @@ def get_properties_autocomplete():
         if len(term) == 0:
             return jsonify({'error': 'term should be of a length 1 at least'}), 400
         fname = term.lower()[0] + ".txt"
+        print("get_properties_autocomplete> fname: "+fname)
         properties = []
         for o in ontologies:
-            fdir = os.path.join(DATA_DIR, o, "lookup", fname)
-            if os.path.exists(fdir):
-                print("fdir exists: ")
-                print(fdir)
-                f = open(fdir)
-                for line in f.readlines():
-                    p = line.strip()
-                    if p == "":
-                        continue
-                    properties.append(p)
-            else:
-                print("not: ")
-                print(fdir)
+            print("get_properties_autocomplete> ontology: "+o)
+            for D in [DATA_DIR, ONT_DIR]:
+                try:
+                    fdir = os.path.join(D, o, "lookup", fname)
+                    if os.path.exists(fdir):
+                        print("fdir exists: ")
+                        print(fdir)
+                        f = open(fdir)
+                        for line in f.readlines():
+                            p = line.strip()
+                            if p == "":
+                                break
+                            print("p: "+p)
+                            properties.append(p)
+                        break
+                    else:
+                        print("not: ")
+                        print(fdir)
+
+                except:
+                    continue
+        print("properties: ")
+        print(properties)
         return jsonify({'properties': properties})
 
 
@@ -527,9 +564,9 @@ def sparql_view():
                     return jsonify(error="Invalid KG id"), 400
 
                 g = rdflib.Graph()
-                print("will parse: "+fpath)
+                print("will parse: " + fpath)
                 g.parse(fpath, format="ttl")
-                print("query kg with: "+query)
+                print("query kg with: " + query)
                 qres = g.query(query)
                 results = []
                 for row in qres:
@@ -558,10 +595,10 @@ def generate_kg_rml(mapping_fdir):
     if not os.path.exists(KG_DIR):
         os.makedirs(KG_DIR)
     if current_user.is_authenticated:
-        print("user is authenticated: "+current_user.username)
+        print("user is authenticated: " + current_user.username)
         if 'RMLMAPPER_PATH' in os.environ:
             jar_path = os.environ['RMLMAPPER_PATH']
-            print("jar_path exists: "+jar_path)
+            print("jar_path exists: " + jar_path)
 
             user_group_rel = models.ManyUserGroup.query.filter_by(user=current_user.id).first()
             if user_group_rel:
@@ -577,7 +614,7 @@ def generate_kg_rml(mapping_fdir):
             else:
                 print("user group membership does not exists")
                 fname = "test2"
-            out_path = os.path.join(KG_DIR, fname+".ttl")
+            out_path = os.path.join(KG_DIR, fname + ".ttl")
 
             cmd = """cd "%s" ;java -jar "%s" -m "%s" -o "%s" """ % (UPLOAD_DIR, jar_path, mapping_fdir, out_path)
             print("cmd: %s" % cmd)
@@ -634,7 +671,8 @@ def generate_mapping():
             if kgid is None:
                 return render_template('msg.html', error_msg="Error generating KG")
             else:
-                return render_template('msg.html', msg="Generated the KG.", html="<a href='/sparql?id=%s'>Go to SPARQL</a>" % (str(kgid)))
+                return render_template('msg.html', msg="Generated the KG.",
+                                       html="<a href='/sparql?id=%s'>Go to SPARQL</a>" % (str(kgid)))
         else:
             return render_template('msg.html', msg="Invalid mapping language", msg_title="Error")
         f = open(mapping_file_dir)
@@ -693,7 +731,3 @@ if __name__ == '__main__':
         app.run(debug=True, host=sys.argv[1], port=int(sys.argv[2]))
     else:
         app.run(debug=True)
-
-
-
-
