@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block content%}
+
+<div class="ui segment">
+    <h4>Knowledge Graphs</h4>
+
+    <table class="ui celled table">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Knowledge Graph Name</th>
+            <th>Group</th>
+            <th>URL</th>
+        </tr>
+        </thead>
+        <tbody>
+        {%for kg in kgs%}
+        <tr>
+            <td data-label="ID">{{kg.kg.id}}</td>
+            <td data-label="Name">
+                <div class="ui grid">
+                    <div class="left floated twelve wide column">
+                        <p>{{kg.kg.name}}</p>
+                    </div>
+                    <div class="right floated two wide column">
+                        <p><i class="edit icon right aligned"
+                              onclick="document.getElementById('kgid').value='{{kg.kg.id}}';document.getElementById('kgname').value='{{kg.kg.name}}'; $('.ui.modal').modal('show');"></i>
+                        </p>
+                    </div>
+
+                    <div class="right floated two wide column">
+                        <p><i class="times icon right aligned"
+                              onclick="document.getElementById('kg-id-del').value='{{kg.kg.id}}';document.getElementById('form-del-kg').submit();"></i>
+                        </p>
+                    </div>
+
+                </div>
+            </td>
+            <td data-label="Group">{{kg.group.name}}</td>
+            <td data-label="URL"><a href="/sparql?id={{kg.kg.id}}">{{kg.kg.name}}</a></td>
+        </tr>
+        {%endfor%}
+        </tbody>
+    </table>
+
+</div>
+
+
+<div class="ui modal">
+    <i class="close icon"></i>
+    <div class="header">
+        Edit Knowledge Graph Name
+    </div>
+    <!--<div class="image content">-->
+    <!--<div class="ui medium image">-->
+    <!--<img src="/images/avatar/large/chris.jpg">-->
+    <!--</div>-->
+    <!--<div class="description">-->
+    <!--<div class="ui header">We've auto-chosen a profile image for you.</div>-->
+    <!--<p>We've grabbed the following image from the <a href="https://www.gravatar.com" target="_blank">gravatar</a> image associated with your registered e-mail address.</p>-->
+    <!--<p>Is it okay to use this photo?</p>-->
+    <!--</div>-->
+    <!--</div>-->
+
+    <div class="content">
+        <!--<div class="ui medium image">-->
+        <!--<img src="/images/avatar/large/chris.jpg">-->
+        <!--</div>-->
+        <div class="description">
+
+
+            <form class="ui form" action="updatekg" method="POST">
+                <div class="field">
+                    <label>KG Name</label>
+                    <input id="kgname" type="text" name="name" placeholder="Knowledge Graph Name"/>
+                </div>
+                <input id="kgid" type="hidden" name="id"/>
+                <!--<div class="field">-->
+                <!--<label>Last Name</label>-->
+                <!--<input type="text" name="last-name" placeholder="Last Name">-->
+                <!--</div>-->
+                <!--<div class="field">-->
+                <!--<div class="ui checkbox">-->
+                <!--<input type="checkbox" tabindex="0" class="hidden">-->
+                <!--<label>I agree to the Terms and Conditions</label>-->
+                <!--</div>-->
+                <!--</div>-->
+                <button class="ui button" type="submit">Edit</button>
+                <!--<button class="ui red button" onclick="document.getElementById('kg-id-del').value=document.getElementById('kgid').value;document.getElementById('form-del-kg').submit();">Delete</button>-->
+            </form>
+            <form id="form-del-kg" class="ui form" action="deletekg" method="POST">
+                <input name="id" id="kg-id-del" type="hidden"/>
+            </form>
+
+
+        </div>
+    </div>
+
+
+</div>
+
+{%endblock%}

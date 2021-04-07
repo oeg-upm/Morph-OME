@@ -1,7 +1,7 @@
 import os
 import json
 import traceback
-from flask import Flask, render_template, jsonify, request, send_from_directory, session, redirect
+from flask import Flask, render_template, jsonify, request, send_from_directory, session, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import login_user, logout_user, login_required, LoginManager, current_user
 from werkzeug.utils import secure_filename
@@ -46,7 +46,9 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 # app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024  # 30 Kb
+# app.config['MAX_CONTENT_LENGTH'] = 50 * 1024  # 50 Kb
+app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024  # 1 MB/1000 KB
+
 
 BASE_DIR = os.path.dirname(app.instance_path)
 DATA_DIR = os.path.join(BASE_DIR, 'data')
@@ -98,6 +100,87 @@ def get_public_ontologies():
     return datasets
 
 
+@app.route("/knowledgegraphs")
+@login_required
+def knowledge_graphs_view():
+    mems = models.ManyUserGroup.query.filter_by(user=current_user.id).all()
+    k = []
+    for m in mems:
+        g = models.Group.query.filter_by(id=m.group).first()
+        kgs = models.KG.query.filter_by(group=g.id).all()
+        for kg in kgs:
+            d = {
+                'kg': kg,
+                'group': g
+            }
+            k.append(d)
+
+    return render_template('kgs.html', kgs=k)
+
+
+@app.route("/updatekg", methods=["POST"])
+@login_required
+def update_kg():
+    if 'name' in request.form and 'id' in request.form:
+        kg = models.KG.query.filter_by(id=int(request.form['id'])).first()
+        if kg:
+            mem = models.ManyUserGroup.query.filter_by(user=current_user.id, group=kg.group).first()
+            if mem:
+                kg.name = request.form['name']
+                db.session.commit()
+                return redirect(url_for('knowledge_graphs_view'))
+                # return redirect(url_for('sparql_view') + "?id=" + str(kg.id))
+            else:
+                return render_template('msg.html',
+                                       msg="Invalid Knowledge Graph. You don't have a knowledge graph with this id",
+                                       msg_title="Error")
+        else:
+            return render_template('msg.html',
+                                   msg="Invalid Knowledge Graph.",
+                                   msg_title="Error")
+
+    else:
+        return render_template('msg.html',
+                               msg="Missing Knowledge Graph name and ID.",
+                               msg_title="Error")
+
+
+@app.route("/deletekg", methods=["POST"])
+@login_required
+def delete_kg():
+    if 'id' in request.form:
+        kg = models.KG.query.filter_by(id=int(request.form['id'])).first()
+        if kg:
+            mem = models.ManyUserGroup.query.filter_by(user=current_user.id, group=kg.group).first()
+            if mem:
+                kg_dir = os.path.join(KG_DIR, str(kg.id)+".ttl")
+                try:
+                    os.remove(kg_dir)
+                    db.session.delete(kg)
+                    db.session.commit()
+                    return redirect(url_for('knowledge_graphs_view'))
+
+                except Exception as e:
+                    print("Exception: "+str(e))
+                    traceback.print_exc()
+                    return render_template('msg.html',
+                                           msg="Error deleting the Knowledge Graph",
+                                           msg_title="Error")
+            else:
+                return render_template('msg.html',
+                                       msg="Invalid Knowledge Graph. You don't have a knowledge graph with this ID",
+                                       msg_title="Error")
+        else:
+            return render_template('msg.html',
+                                   msg="Invalid Knowledge Graph.",
+                                   msg_title="Error")
+    else:
+        return render_template('msg.html',
+                               msg="Missing Knowledge Graph ID.",
+                               msg_title="Error")
+
+
+
 @app.route("/")
 def home():
     public_ontology_names = get_public_ontologies()
@@ -121,7 +204,8 @@ def home():
         traceback.print_exc()
 
     return render_template('home.html', kgs=[{"id": "dbpedia", "name": "English DBpedia (version 2016-04)"}],
-                           ontologies=public_ontologies + private_ontologies, max_kb=app.config['MAX_CONTENT_LENGTH']/1024)
+                           ontologies=public_ontologies + private_ontologies,
+                           max_kb=app.config['MAX_CONTENT_LENGTH'] / 1024)
 
 
 @app.route("/public-ontologies", methods=["POST", "GET"])
@@ -329,7 +413,7 @@ def login_view():
     session['state'] = get_random_text(10)
     print("Generated state: " + session['state'])
     return redirect("https://github.com/login/oauth/authorize?client_id=%s&state=%s" % (
-    os.environ['github_appid'], session['state']))
+        os.environ['github_appid'], session['state']))
 
 
 @app.route("/predict_subject", methods=['POST'])
@@ -487,7 +571,8 @@ def editor():
     # if current_user.is_authenticated:
     #     labels += util.get_classes_as_txt(ontologies, data_dir=ONT_DIR)
     # f = open(os.path.join(DATA_DIR, "labels.txt"))
-    return render_template('editor.html', labels_txt=labels, ontologies_txt=",".join(ontologies), headers=headers, kg=kg,
+    return render_template('editor.html', labels_txt=labels, ontologies_txt=",".join(ontologies), headers=headers,
+                           kg=kg,
                            callback=callback_url, file_name=fname, error_msg=error_msg, warning_msg=warning_msg)
 
 
@@ -509,10 +594,10 @@ def get_properties_autocomplete():
         if len(term) == 0:
             return jsonify({'error': 'term should be of a length 1 at least'}), 400
         fname = term.lower()[0] + ".txt"
-        print("get_properties_autocomplete> fname: "+fname)
+        print("get_properties_autocomplete> fname: " + fname)
         properties = []
         for o in ontologies:
-            print("get_properties_autocomplete> ontology: "+o)
+            print("get_properties_autocomplete> ontology: " + o)
             for D in [DATA_DIR, ONT_DIR]:
                 try:
                     fdir = os.path.join(D, o, "lookup", fname)
@@ -524,7 +609,7 @@ def get_properties_autocomplete():
                             p = line.strip()
                             if p == "":
                                 break
-                            print("p: "+p)
+                            print("p: " + p)
                             properties.append(p)
                         break
                     else:

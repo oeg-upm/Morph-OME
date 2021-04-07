@@ -5,11 +5,11 @@
 
 <form class="ui form" action="editor" method=post enctype=multipart/form-data>
   <div class="field">
-    <label>Enter the URL of your CSV file (max size is {{max_kb}} kb)</label>
+    <label>Enter the URL of your CSV file (max size is {{max_kb|int }} kb)</label>
     <input type="url" name="source" placeholder="http://your_csv_file_url">
   </div>
   <div class="field">
-    <label>Upload your CSV file (max size is {{max_kb}} kb)</label>
+    <label>Upload your CSV file (max size is {{max_kb|int }} kb)</label>
     <input type="file" name="sourcefile"/>
   </div>
   <div class="field">
