@@ -803,6 +803,8 @@ def add_ontology():
             print("to save the file to: " + uploaded_file_dir)
             if not os.path.exists(UPLOAD_DIR):
                 os.mkdir(UPLOAD_DIR)
+            if not os.path.exists(DATA_DIR):
+                os.mkdir(DATA_DIR)
             sourcefile.save(uploaded_file_dir)
             generate_lookup.generate_lookup(uploaded_file_dir, request.form['name'].strip(), data_dir=DATA_DIR)
             return render_template('msg.html', msg="Ontology added successfully", msg_title="Success")

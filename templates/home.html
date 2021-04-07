@@ -48,10 +48,10 @@
 
 {%if UPLOAD_ONTOLOGY%}
 <hr>
-
+<div class="ui segment">
 <form class="ui form" action="add_ontology" method=post enctype=multipart/form-data>
   <div class="field">
-    <label>Upload your Ontology (xml or ttl)</label>
+    <label>Upload a public ontology (xml or ttl)</label>
     <input type="file" name="sourcefile"/>
   </div>
     <div class="field">
@@ -60,7 +60,7 @@
   </div>
   <button class="ui button" type="submit">Add</button>
 </form>
-
+</div>
 {%endif%}
 
 
