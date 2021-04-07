@@ -1,4 +1,4 @@
-
+ome.wsgi
 *.db
 data/*
 upload/*
