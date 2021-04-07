@@ -97,7 +97,7 @@ def build_property_lookup(dataset_name,properties_fdir, data_dir):
     lookup_name = 'lookup'
     lookup_folder_dir = os.path.join(data_dir,dataset_name,lookup_name)
     if not os.path.exists(lookup_folder_dir):
-        os.mkdir(lookup_folder_dir)
+        os.makedirs(lookup_folder_dir)
     # for start in string.ascii_lowercase:
     #     start_dir = os.path.join(lookup_folder_dir, start+".txt")
     for p in properties:

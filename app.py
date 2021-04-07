@@ -89,7 +89,7 @@ def get_public_ontologies():
     datasets = []
     # print("datadir: " + DATA_DIR)
     if not os.path.exists(DATA_DIR):
-        os.mkdir(UPLOAD_DIR)
+        os.makedirs(UPLOAD_DIR)
     for f in os.listdir(DATA_DIR):
         fdir = os.path.join(DATA_DIR, f)
         # print("checking f: " + fdir)
@@ -224,7 +224,7 @@ def public_ontologies_view():
                 uploaded_file_dir = os.path.join(UPLOAD_DIR, filename)
                 print("to save the file to: " + uploaded_file_dir)
                 if not os.path.exists(UPLOAD_DIR):
-                    os.mkdir(UPLOAD_DIR)
+                    os.makedirs(UPLOAD_DIR)
                 sourcefile.save(uploaded_file_dir)
                 generate_lookup.generate_lookup(uploaded_file_dir, request.form['name'].strip(), data_dir=DATA_DIR)
                 return render_template('msg.html', msg="Ontology added successfully", msg_title="Success")
@@ -298,9 +298,9 @@ def ontologies_view():
 
         if sourcefile.filename != "":
             if not os.path.exists(UPLOAD_DIR):
-                os.mkdir(UPLOAD_DIR)
+                os.makedirs(UPLOAD_DIR)
             if not os.path.exists(ONT_DIR):
-                os.mkdir(ONT_DIR)
+                os.makedirs(ONT_DIR)
             uploaded_file_dir = os.path.join(UPLOAD_DIR, str(ont.id) + ".txt")
             print("to save the file to: " + uploaded_file_dir)
             sourcefile.save(uploaded_file_dir)
@@ -516,7 +516,7 @@ def editor():
                 fname = util.get_random_string(4) + "-" + filename
                 uploaded_file_dir = os.path.join(UPLOAD_DIR, fname)
                 if not os.path.exists(UPLOAD_DIR):
-                    os.mkdir(UPLOAD_DIR)
+                    os.makedirs(UPLOAD_DIR)
                 sourcefile.save(uploaded_file_dir)
                 uploaded = True
             else:
@@ -802,9 +802,9 @@ def add_ontology():
             uploaded_file_dir = os.path.join(UPLOAD_DIR, filename)
             print("to save the file to: " + uploaded_file_dir)
             if not os.path.exists(UPLOAD_DIR):
-                os.mkdir(UPLOAD_DIR)
+                os.makedirs(UPLOAD_DIR)
             if not os.path.exists(DATA_DIR):
-                os.mkdir(DATA_DIR)
+                os.makedirs(DATA_DIR)
             sourcefile.save(uploaded_file_dir)
             generate_lookup.generate_lookup(uploaded_file_dir, request.form['name'].strip(), data_dir=DATA_DIR)
             return render_template('msg.html', msg="Ontology added successfully", msg_title="Success")
