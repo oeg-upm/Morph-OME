@@ -11,6 +11,7 @@ blocks:
         - name: Run tests
           commands:
             - checkout
+            - sem-version python 3.7
             - pip install -r requirements.txt
             - export SECRET_KEY="dev"
             - export github_appid="nothing"
