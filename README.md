@@ -1,3 +1,4 @@
+[![Build Status](https://ahmad88me.semaphoreci.com/badges/Morph-OME/branches/master.svg)](https://ahmad88me.semaphoreci.com/projects/Morph-OME)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3764202.svg)](https://doi.org/10.5281/zenodo.3764202)
 
 ![OME](static/logo-min.png)
@@ -62,6 +63,16 @@ os.environ['github_secret']=""
 os.environ['UPLOAD_ONTOLOGY']="false"
 os.environ['RMLMAPPER_PATH']=""
 os.environ['TADA_HOST']=""
+```
+
+## To a shell
+```
+export SECRET_KEY=""
+export github_appid=""
+export github_secret=""
+export UPLOAD_ONTOLOGY="false"
+export RMLMAPPER_PATH=""
+export TADA_HOST=""
 ```
 
 
