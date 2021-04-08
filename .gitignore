@@ -1,3 +1,4 @@
+*.wsgi
 *.db
 data/*
 upload/*
