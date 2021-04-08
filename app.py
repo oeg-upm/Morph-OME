@@ -159,7 +159,7 @@ def delete_kg():
             if mem:
                 kg_dir = os.path.join(KG_DIR, str(kg.id)+".ttl")
                 try:
-                    if os.exists(kg_dir):
+                    if os.path.exists(kg_dir):
                         os.remove(kg_dir)
                     db.session.delete(kg)
                     db.session.commit()
