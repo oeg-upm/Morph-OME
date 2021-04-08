@@ -1,0 +1,21 @@
+version: v1.0
+name: Initial Pipeline
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+blocks:
+  - name: Tests
+    task:
+      jobs:
+        - name: Run tests
+          commands:
+            - checkout
+            - pip install -r requirements.txt
+            - export SECRET_KEY="dev"
+            - export github_appid="nothing"
+            - export github_secret="nothing"
+            - export UPLOAD_ONTOLOGY="false"
+            - export RMLMAPPER_PATH="not now"
+            - export TADA_HOST=""
+            - sh run_tests.sh
