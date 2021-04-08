@@ -159,7 +159,8 @@ def delete_kg():
             if mem:
                 kg_dir = os.path.join(KG_DIR, str(kg.id)+".ttl")
                 try:
-                    os.remove(kg_dir)
+                    if os.exists(kg_dir):
+                        os.remove(kg_dir)
                     db.session.delete(kg)
                     db.session.commit()
                     return redirect(url_for('knowledge_graphs_view'))
