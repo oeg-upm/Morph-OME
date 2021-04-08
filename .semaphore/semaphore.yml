@@ -18,4 +18,4 @@ blocks:
             - export UPLOAD_ONTOLOGY="false"
             - export RMLMAPPER_PATH="not now"
             - export TADA_HOST=""
-            - sh run_tests.sh
+            - 'sh run_tests.sh '
