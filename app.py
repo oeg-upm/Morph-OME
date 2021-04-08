@@ -540,6 +540,8 @@ def app_setup(app, db_name='test.db'):
             if r.status_code == 200:
                 fname = util.get_random_string(4) + "-" + filename
                 uploaded_file_dir = os.path.join(UPLOAD_DIR, fname)
+                if not os.path.exists(UPLOAD_DIR):
+                    os.makedirs(UPLOAD_DIR)
                 f = open(uploaded_file_dir, 'w')
                 f.write(r.text)
                 f.close()
