@@ -86,13 +86,17 @@ def app_setup(app, db_name='test.db'):
     #     a = models.ManyUserGroup.query.filter_by(user=user.id, group=group_id).first()
     #     return a is None
 
+    def create_folders():
+        ds = [DATA_DIR, UPLOAD_DIR, KG_DIR, ONT_DIR]
+        for d in ds:
+            if not os.path.exists(d):
+                os.makedirs(d)
+
 
     # get public ontologies
     def get_public_ontologies():
         datasets = []
-        # print("datadir: " + DATA_DIR)
-        if not os.path.exists(DATA_DIR):
-            os.makedirs(DATA_DIR)
+        create_folders()
         for f in os.listdir(DATA_DIR):
             fdir = os.path.join(DATA_DIR, f)
             # print("checking f: " + fdir)
@@ -814,6 +818,8 @@ def app_setup(app, db_name='test.db'):
                 return render_template('msg.html', msg="Ontology file is not passed", msg_title="Error")
         else:
             return render_template('msg.html', msg="Ontology file is not passed", msg_title="Error")
+
+    create_folders()
 
     return app
 
