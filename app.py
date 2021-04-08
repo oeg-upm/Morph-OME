@@ -707,8 +707,13 @@ def generate_kg_rml(mapping_fdir):
 
             cmd = """cd "%s" ;java -jar "%s" -m "%s" -o "%s" """ % (UPLOAD_DIR, jar_path, mapping_fdir, out_path)
             print("cmd: %s" % cmd)
-            subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
-            return fname
+            try:
+                subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
+                return fname
+            except Exception as e:
+                print("Exception: "+str(e))
+                traceback.print_exc()
+                raise Exception(e)
         else:
             print("MORPH_PATH is missing")
     else:
