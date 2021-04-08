@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block content%}
+<div class="ui segment">
+    <h3>Tutorial</h3>
+
+    <ol>
+        <li class="ui blue segment"><strong>Input file</strong>
+            <p> First, we have a table in CSV format. <br>
+                <img height="300px" src="{{ url_for('static', filename='tutorial/file.png') }}">
+            </p></li>
+        <li class="ui blue segment"><strong>Upload file</strong>
+            <p> We go to <a href="https://ome.linkeddata.es">Morph-OME website</a>
+                and upload the file. We can either upload a local file or enter the url of a remote one.<br>
+                <img height="300px" src="{{ url_for('static', filename='tutorial/upload-file1.png') }}">
+                <img height="300px" src="{{ url_for('static', filename='tutorial/upload-file2.png') }}">
+            </p>
+        </li>
+        <li class="ui blue segment"><strong>Select the ontology</strong>
+            <p>
+                We can select one or more ontologies to be used for the auto-completion function in the next page<br>
+                <img height="300px" src="{{ url_for('static', filename='tutorial/select-ontology.png') }}">
+            </p>
+        </li>
+        <li class="ui blue segment"><strong>Select smart suggestion source</strong>
+            <p>
+                We select the knowledge graph to help us in selecting the classes and properties in the next page.
+                We can select <cite>None</cite> if we don't want to use the smart suggestion feature. Then we click on
+                <cite>Open With Editor</cite> to annotate the columns.<br>
+                <img height="300px" src="{{ url_for('static', filename='tutorial/select-training.png') }}">
+
+            </p>
+        </li>
+
+        <li class="ui blue segment"><strong>Select the subject column</strong>
+            <p> We select the subject column, which contains the labels of the main entities in the input data. Here,
+                the subject column is <cite>name</cite>. As we selected the DBpedia knowledge graph for the smart
+                suggestion,
+                the class of the subject column and the equivalent properties of the columns will be suggested.
+                <br>
+                <img height="300px" src="{{ url_for('static', filename='tutorial/select-column1.png') }}">
+                <img height="300px" src="{{ url_for('static', filename='tutorial/select-column2.png') }}">
+            </p>
+        </li>
+
+
+        <li class="ui blue segment"><strong>Select the class</strong>
+            <p>If the suggested class of the subject column is correct, we can leave it as is. If we like to change it,
+                we can type the correct class and editor will suggest the class.
+                <br>
+                <img height="300px" src="{{ url_for('static', filename='tutorial/class1.png') }}">
+                <img height="300px" src="{{ url_for('static', filename='tutorial/class2.png') }}">
+            </p>
+        </li>
+
+
+        <li class="ui blue segment"><strong>Select properties</strong>
+            <p>If we selected the smart suggestion options, the system would try to predict the equivalent properties to
+                the
+                different columns (which is the case here). In this example, the system didn't predict the height, so we
+                type the first few letters and the auto-complete function help us select the correct property.
+                <br>
+                <img height="300px" src="{{ url_for('static', filename='tutorial/property.png') }}">
+            </p>
+        </li>
+
+
+        <li class="ui blue segment"><strong>Select Output</strong>
+            <p> We can choose to download the results as a mapping file in RML or R2RML format. We can also choose to
+                generate the
+                RDF of our data with a SPARQL endpoint. To do so, we choose the option <cite>Online KG</cite>
+                <br>
+                <img height="300px" src="{{ url_for('static', filename='tutorial/select-mapping-kg.png') }}">
+                <img height="300px" src="{{ url_for('static', filename='tutorial/select-mapping-option.png') }}">
+
+            </p>
+        </li>
+
+
+        <li class="ui blue segment"><strong>Generate KG</strong>
+            <p>
+                We generate the knowledge graph and allow querying the data using SPARQL.
+                <br>
+                <img height="200px" src="{{ url_for('static', filename='tutorial/kg-generated.png') }}">
+                <img height="300px" src="{{ url_for('static', filename='tutorial/sparql.png') }}">
+
+            </p>
+        </li>
+
+
+        <li class="ui blue segment"><strong>Find it again</strong>
+            <p> We can go to the page <a href="/knowledgegraphs">My Knowledge Graph</a>, and access previously generated
+                Knowledge Graphs.
+                <br>
+                <img height="300px" src="{{ url_for('static', filename='tutorial/my-kgs.png') }}">
+            </p>
+        </li>
+
+
+    </ol>
+</div>
+
+
+{%endblock%}

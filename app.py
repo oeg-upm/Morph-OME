@@ -104,6 +104,11 @@ def get_public_ontologies():
     return datasets
 
 
+@app.route("/tutorial")
+def tutorial_view():
+    return render_template('tutorial.html')
+
+
 @app.route("/knowledgegraphs")
 @login_required
 def knowledge_graphs_view():
