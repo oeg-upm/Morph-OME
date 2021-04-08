@@ -1,4 +1,4 @@
-[![Build Status](https://ahmad88me.semaphoreci.com/badges/Morph-OME/branches/unittest.svg)](https://ahmad88me.semaphoreci.com/projects/Morph-OME)
+[![Build Status](https://ahmad88me.semaphoreci.com/badges/Morph-OME/branches/master.svg)](https://ahmad88me.semaphoreci.com/projects/Morph-OME)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3764202.svg)](https://doi.org/10.5281/zenodo.3764202)
 
 ![OME](static/logo-min.png)
