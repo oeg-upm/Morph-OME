@@ -20,3 +20,7 @@ blocks:
             - export RMLMAPPER_PATH="not now"
             - export TADA_HOST=""
             - 'sh run_tests.sh '
+            - sh run_cov.sh
+            - 'bash <(curl -s https://codecov.io/bash) -t $CODECOV_TOKEN'
+      secrets:
+        - name: Morph-OME secret
