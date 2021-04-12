@@ -109,6 +109,10 @@ def app_setup(app, db_name='test.db'):
         return datasets
 
 
+    @app.route("/about")
+    def about_view():
+        return render_template('about.html')
+
     @app.route("/tutorial")
     def tutorial_view():
         return render_template('tutorial.html')
