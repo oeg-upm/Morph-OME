@@ -26,7 +26,7 @@ def annotate_subject(source_dir, subject_col_id, top_k=3, logger=None):
     files = [
         ('source', (
             source_dir.split(os.sep)[-1],
-            open(source_dir),
+            open(source_dir, encoding='utf-8'),
             'text/plain'))
     ]
 
@@ -65,7 +65,7 @@ def annotate_property(source_dir, subject_col_id, top_k=3, logger=None):
     }
 
     files = {
-        'source': (source_dir.split(os.sep)[-1], open(source_dir), 'text/plain')
+        'source': (source_dir.split(os.sep)[-1], open(source_dir, encoding='utf-8'), 'text/plain')
     }
     response = requests.post(TADA_HOST+'/property', data=data, files=files)
     if response.status_code == 200:

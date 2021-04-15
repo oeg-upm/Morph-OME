@@ -14,7 +14,7 @@ def get_headers(file_dir, file_type):
     :param file_type: ext
     :return:
     """
-    ext = file_dir.split('.')[-1].lower().strip
+    ext = file_dir.strip().split('.')[-1].lower().strip()
     if ext == 'csv' or file_type == "csv":
         return get_headers_csv(file_dir)
     elif ext == 'json' or file_type == "json":
@@ -25,7 +25,7 @@ def get_headers(file_dir, file_type):
 
 
 def get_headers_csv(file_dir):
-    f = open(file_dir)
+    f = open(file_dir, encoding='utf-8')
     header_str = ""
     for line in f.readlines():
         header_str = line
@@ -99,7 +99,7 @@ def generate_r2rml_mappings(mapping_file_dir, file_name, entity_class, entity_co
 .
     """ % (mapping_id, table_name, entity_class, entity_column.upper(), property_column_mapping)
     print(mapping_content)
-    f = open(mapping_file_dir, 'w')
+    f = open(mapping_file_dir, 'w', encoding='utf-8')
     f.write(mapping_content)
     # f.write(mapping_content.encode('utf8'))
     f.close()
@@ -148,7 +148,7 @@ rr:subjectMap [
     # mapping_file_path = os.path.join(BASE_DIR, 'local', mapping_id+'.rml.ttl')
     print('mapping file path:')
     print(mapping_file_path)
-    f = open(mapping_file_path, 'w')
+    f = open(mapping_file_path, 'w', encoding='utf-8')
     f.write(mapping_file)
     #f.write(mapping_file.encode('utf8'))
     f.close()
@@ -207,7 +207,7 @@ mappings:
     # mapping_file_path = os.path.join(BASE_DIR, 'local', mapping_id+'.rml.ttl')
     print('mapping file path:')
     print(mapping_file_path)
-    f = open(mapping_file_path, 'w')
+    f = open(mapping_file_path, 'w', encoding='utf-8')
     # f.write(mapping_file.encode('utf8'))
     f.write(mapping_file)
     f.close()
@@ -219,7 +219,7 @@ def get_classes_from_file(odir):
     :param odir:
     :return:
     """
-    f = open(odir)
+    f = open(odir, encoding='utf-8')
     classes = f.read().split('\n')
     f.close()
     return classes
