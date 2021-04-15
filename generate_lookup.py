@@ -30,13 +30,13 @@ def generate_lookup(f_dir, dataset_name, data_dir):
     if found:
         classes = get_all_classes(g)
         classes_f_name = os.path.join(dataset_dir, 'classes.txt')
-        f = open(classes_f_name,'w')
+        f = open(classes_f_name, 'w', encoding='utf-8')
         for c in classes:
             f.write(c+"\n")
         f.close()
         properties = get_all_properties(g)
         properties_f_dir = os.path.join(dataset_dir, 'properties.txt')
-        f = open(properties_f_dir,'w')
+        f = open(properties_f_dir, 'w', encoding='utf-8')
         for p in properties:
             f.write(p+"\n")
         f.close()
@@ -111,7 +111,7 @@ def build_property_lookup(dataset_name,properties_fdir, data_dir):
 
 def write_lookup_for(base_dir, letter, property_uri):
     fdir = os.path.join(base_dir, letter+".txt")
-    f = open(fdir,'a+')
+    f = open(fdir, 'a+', encoding='utf-8')
     f.write(property_uri+"\n")
     f.close()
 

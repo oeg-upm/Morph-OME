@@ -550,7 +550,7 @@ def app_setup(app, db_name='test.db'):
                 uploaded_file_dir = os.path.join(UPLOAD_DIR, fname)
                 if not os.path.exists(UPLOAD_DIR):
                     os.makedirs(UPLOAD_DIR)
-                f = open(uploaded_file_dir, 'w')
+                f = open(uploaded_file_dir, 'w', encoding='utf-8')
                 f.write(r.text)
                 f.close()
             else:
