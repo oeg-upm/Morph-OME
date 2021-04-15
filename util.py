@@ -25,7 +25,7 @@ def get_headers(file_dir, file_type):
 
 
 def get_headers_csv(file_dir):
-    f = open(file_dir)
+    f = open(file_dir, encoding='utf-8')
     header_str = ""
     for line in f.readlines():
         header_str = line
@@ -219,7 +219,7 @@ def get_classes_from_file(odir):
     :param odir:
     :return:
     """
-    f = open(odir)
+    f = open(odir, encoding='utf-8')
     classes = f.read().split('\n')
     f.close()
     return classes

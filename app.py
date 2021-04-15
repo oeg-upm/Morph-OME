@@ -610,7 +610,7 @@ def app_setup(app, db_name='test.db'):
                         if os.path.exists(fdir):
                             print("fdir exists: ")
                             print(fdir)
-                            f = open(fdir)
+                            f = open(fdir, encoding='utf-8')
                             for line in f.readlines():
                                 p = line.strip()
                                 if p == "":
@@ -771,13 +771,13 @@ def app_setup(app, db_name='test.db'):
                                            html="<a href='/sparql?id=%s'>Go to SPARQL</a>" % (str(kgid)))
             else:
                 return render_template('msg.html', msg="Invalid mapping language", msg_title="Error")
-            f = open(mapping_file_dir)
+            f = open(mapping_file_dir, encoding='utf-8')
             mapping_content = f.read()
             f.close()
             # return render_template('msg.html', msg=mapping_content)
             if 'callback' in request.form and request.form['callback'].strip() != "":
                 callback_url = request.form['callback'].strip()
-                files = {'file': open(mapping_file_dir, 'rb')}
+                files = {'file': open(mapping_file_dir, 'rb', encoding='utf-8')}
                 try:
                     r = requests.post(callback_url, files=files)
                     if r.status_code == 200:
