@@ -14,7 +14,7 @@ def get_headers(file_dir, file_type):
     :param file_type: ext
     :return:
     """
-    ext = file_dir.split('.')[-1].lower().strip
+    ext = file_dir.strip().split('.')[-1].lower().strip()
     if ext == 'csv' or file_type == "csv":
         return get_headers_csv(file_dir)
     elif ext == 'json' or file_type == "json":
