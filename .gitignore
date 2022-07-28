@@ -5,7 +5,6 @@ upload/*
 ontology/*
 kg
 
-*.csv
 *.r2rml
 .idea/
 .DS_Store
