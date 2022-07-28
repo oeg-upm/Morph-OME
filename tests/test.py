@@ -11,6 +11,7 @@ sys.path.append(BASE_DIR)
 
 from tests.test_upload import UploadTest
 from tests.test_interface import InterfaceTest
+from tests.test_util import UtilTest
 
 import unittest
 from tests import prep
@@ -27,6 +28,7 @@ if __name__ == "__main__":
     cases = [
         unittest.TestLoader().loadTestsFromTestCase(UploadTest),
         loadTC(InterfaceTest),
+        loadTC(UtilTest),
     ]
 
     suite = unittest.TestSuite(cases)
