@@ -31,6 +31,8 @@ def get_headers_csv(file_dir):
         header_str = line
         break
 
+    header_str = header_str.replace('\n', '')
+
     header = []
     start_q = False
     start_idx = 0
