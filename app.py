@@ -21,6 +21,9 @@ import shutil
 
 import models
 
+MAX_ONT_SIZE = 1024 * 1024 * 20  # 20 MB/1000 KB
+
+
 if 'UPLOAD_ONTOLOGY' in os.environ:
     UPLOAD_ONTOLOGY = os.environ['UPLOAD_ONTOLOGY'].lower() == "true"
 else:
@@ -303,6 +306,7 @@ def delete_ontology_view():
 @app.route("/ontologies", methods=["POST", "GET"])
 @login_required
 def ontologies_view():
+    app.config['MAX_CONTENT_LENGTH'] = MAX_ONT_SIZE
     if request.method == "POST":
         if 'name' not in request.form:
             return render_template('msg.html', msg="Ontology name is not passed", msg_title="Error")
@@ -816,7 +820,7 @@ def get_random_text(n=4):
 
 @app.route("/add_ontology", methods=["POST"])
 def add_ontology():
-    app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024 * 20  # 20 MB/1000 KB
+    app.config['MAX_CONTENT_LENGTH'] = MAX_ONT_SIZE
     if not UPLOAD_ONTOLOGY:
         return render_template('msg.html', msg="Uploading ontologies for all users is not allowed", msg_title="Error")
     if 'name' not in request.form:
