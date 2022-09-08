@@ -746,8 +746,12 @@ def generate_kg_rml(mapping_fdir):
 def generate_mapping():
     print("generate_mapping> ")
     if 'entity_class' in request.form and 'entity_column' in request.form and 'file_name' in request.form and 'mapping_lang' in request.form:
+        print("form: ")
+        print(request.form)
         entity_class = request.form['entity_class']
         entity_column = request.form['entity_column']
+        if entity_column[0] == '"' and entity_column[-1] == '"':
+            entity_column = entity_column[1:-1]
         file_name = request.form['file_name']
         mapping_lang = request.form['mapping_lang']
         print("request form list: ")
@@ -756,15 +760,22 @@ def generate_mapping():
         print(request.form.keys())
         mappings = []
         for i in range(len(list(request.form.keys()))):
-            key = 'form_key_' + str(i)
-            val = 'form_val_' + str(i)
+            key = 'form_key_' + str(i+1)
+            val = 'form_val_' + str(i+1)
             print("key = %s" % key)
             print("val = %s" % val)
-            # print list(request.form.keys())
 
             if key in request.form and val in request.form:
                 if request.form[val].strip() != '':
-                    element = {"key": request.form[key], "val": request.form[val]}
+                    k = request.form[key]
+                    v = request.form[val]
+                    if k[0]=='"' and k[-1] == '"':
+                        k = k[1:-1]
+
+                    if v[0]=='"' and v[-1] == '"':
+                        v = v[1:-1]
+
+                    element = {"key": k, "val": v}
                     mappings.append(element)
             else:
                 continue

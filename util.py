@@ -139,7 +139,7 @@ rml:logicalSource [
     rml:referenceFormulation ql:CSV
 ];
 rr:subjectMap [
-    rr:template "http://mappingpedia.linkeddata.es/resource/{%s}";
+    rr:template "http://morph.linkeddata.es/resource/{%s}";
     rr:class <%s>
 ];
 %s
@@ -147,12 +147,10 @@ rr:subjectMap [
     """ % (mapping_id, file_name, entity_column, entity_class, property_column_mapping)
     print(mapping_file)
     mapping_file_path = mapping_file_dir
-    # mapping_file_path = os.path.join(BASE_DIR, 'local', mapping_id+'.rml.ttl')
     print('mapping file path:')
     print(mapping_file_path)
     f = open(mapping_file_path, 'w', encoding='utf-8')
     f.write(mapping_file)
-    #f.write(mapping_file.encode('utf8'))
     f.close()
     return mapping_file_path
 

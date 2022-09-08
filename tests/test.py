@@ -12,6 +12,7 @@ sys.path.append(BASE_DIR)
 from tests.test_upload import UploadTest
 from tests.test_interface import InterfaceTest
 from tests.test_util import UtilTest
+from tests.test_mappings import MappingsTest
 
 import unittest
 from tests import prep
@@ -29,6 +30,7 @@ if __name__ == "__main__":
         unittest.TestLoader().loadTestsFromTestCase(UploadTest),
         loadTC(InterfaceTest),
         loadTC(UtilTest),
+        loadTC(MappingsTest)
     ]
 
     suite = unittest.TestSuite(cases)
