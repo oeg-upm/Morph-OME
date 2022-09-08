@@ -216,6 +216,7 @@ def delete_kg():
                                msg="Missing Knowledge Graph ID.",
                                msg_title="Error")
 
+
 @app.route("/")
 def home():
     public_ontology_names = get_public_ontologies()
@@ -640,7 +641,6 @@ def get_properties_autocomplete():
                     else:
                         print("not: ")
                         print(fdir)
-
                 except:
                     continue
         print("properties: ")
@@ -769,10 +769,10 @@ def generate_mapping():
                 if request.form[val].strip() != '':
                     k = request.form[key]
                     v = request.form[val]
-                    if k[0]=='"' and k[-1] == '"':
+                    if k[0] == '"' and k[-1] == '"':
                         k = k[1:-1]
 
-                    if v[0]=='"' and v[-1] == '"':
+                    if v[0] == '"' and v[-1] == '"':
                         v = v[1:-1]
 
                     element = {"key": k, "val": v}
