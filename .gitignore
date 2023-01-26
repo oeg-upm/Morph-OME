@@ -1,3 +1,4 @@
+anns.csv
 *.wsgi
 *.db
 data/*

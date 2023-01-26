@@ -33,7 +33,10 @@
 
     <input type="text" name="file_name" value="{{file_name}}" id="file_name" readonly>
     <input type="hidden" name="format" value="csv">
+    <input type="text" name="kg" value="{{kg}}" readonly>
     <input type="hidden" name="callback" value="{{callback}}">
+
+
 
     <div class="field">
         <label for="entity_column">Entity Column (primary key)</label>
@@ -151,7 +154,7 @@ $("#entity_column").change(function (){
     $.ajax({
       type: "POST",
       url: "predict_subject",
-      data: {"subject": subject_header, "file_name":the_file_name},
+      data: {"subject": subject_header, "file_name":the_file_name, "kg": "{{kg}}" },
     })
     .done(function(data){
         //console.log('success!');
@@ -264,7 +267,7 @@ function predict_all_properties(){
                 $.ajax({
                   type: "POST",
                   url: "/predict_properties",
-                  data: {"subject": subject_header, "file_name":the_file_name, "k":3},
+                  data: {"subject": subject_header, "file_name":the_file_name, "kg": "{{kg}}", "k":3},
                   async: true,
                 }).done(function(data){
                     console.log("cols_properties pairs:")

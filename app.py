@@ -18,6 +18,7 @@ import chardet
 import rdflib
 import subprocess
 import shutil
+import csv
 
 import models
 
@@ -49,7 +50,7 @@ login_manager.init_app(app)
 
 
 def app_setup(app, db_name='test.db'):
-    global BASE_DIR, DATA_DIR, UPLOAD_DIR, KG_DIR, ONT_DIR, DOWNLOAD, login_manager, db
+    global BASE_DIR, DATA_DIR, UPLOAD_DIR, KG_DIR, ONT_DIR, DOWNLOAD, login_manager, db, ANN_DIR
     # app = Flask(__name__)
     app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
     # app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
@@ -58,18 +59,18 @@ def app_setup(app, db_name='test.db'):
     if 'MAX_CONTENT_LENGTH' in os.environ:
         app.config['MAX_CONTENT_LENGTH'] = int(os.environ['MAX_CONTENT_LENGTH'])
 
-
     BASE_DIR = os.path.dirname(app.instance_path)
     DATA_DIR = os.path.join(BASE_DIR, 'data')
     UPLOAD_DIR = os.path.join(BASE_DIR, 'upload')
     KG_DIR = os.path.join(BASE_DIR, 'kg')
     ONT_DIR = os.path.join(BASE_DIR, 'ontology')
+    ANN_DIR = os.path.join(BASE_DIR, 'anns.csv')
     DOWNLOAD = False
 
     set_config(logger, os.path.join(BASE_DIR, 'ome.log'))
 
     # SQL
-    print('sqlite:///' + BASE_DIR + '/test.db')
+    print('sqlite:///' + BASE_DIR + "/" + db_name)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(BASE_DIR, db_name)
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     db = models.db
@@ -101,6 +102,7 @@ def load_user(user_id):
 # def user_in_group(user, group_id):
 #     a = models.ManyUserGroup.query.filter_by(user=user.id, group=group_id).first()
 #     return a is None
+
 
 def create_folders():
     global DATA_DIR, UPLOAD_DIR, KG_DIR, ONT_DIR
@@ -217,6 +219,70 @@ def delete_kg():
                                msg_title="Error")
 
 
+def get_anns(source_url):
+    """
+    Get the available annotation sources (HDT models) for a given source
+    """
+    response = requests.get(source_url+"sources")
+    if response.status_code == 200:
+        try:
+            ann_sources = response.json()
+            return ann_sources['sources']
+        except Exception as e:
+            print("get_anns> Exception: %s" % str(e))
+            traceback.print_exc()
+            return []
+
+    print("get_anns> Error getting ann sources")
+    return []
+
+
+def get_source(source_id):
+    sources = get_sources()
+    for source in sources:
+        if source["id"] == source_id:
+            return source
+    print("get_source> source <%s> is not found" % source_id)
+
+
+def get_sources():
+    """
+    Get sources, which can have one or more annotators
+    """
+    global ANN_DIR
+    sources = []
+    if os.path.exists(ANN_DIR):
+        with open(ANN_DIR, 'r') as data:
+            for ann in csv.DictReader(data):
+                print(ann)
+                sources.append(ann)
+    else:
+        print("%s is not found" % ANN_DIR)
+    return sources
+
+
+def get_annotators():
+    """
+    Get annotators and sources with updated ids as: source_id,ann_id
+    """
+    sources = get_sources()
+    anns = []
+
+    for source in sources:
+        try:
+            s_anns = get_anns(source["url"])
+            for ann in s_anns:
+                ann["id"] = "%s,%s" % (source["id"], ann["id"])
+            # for ann in s_anns:
+            #     ann["name"] += " -- %s" % source["name"]
+            print("s_anns: ")
+            print(s_anns)
+            anns += s_anns
+        except Exception as e:
+            print("get_annotators> exception: %s" % str(e))
+    return anns
+
+
 @app.route("/")
 def home():
     public_ontology_names = get_public_ontologies()
@@ -239,7 +305,7 @@ def home():
         print("Exception: " + str(e))
         traceback.print_exc()
 
-    return render_template('home.html', kgs=[{"id": "dbpedia", "name": "English DBpedia (version 2016-04)"}],
+    return render_template('home.html', kgs=get_annotators(),
                            ontologies=public_ontologies + private_ontologies, UPLOAD_ONTOLOGY=UPLOAD_ONTOLOGY,
                            max_kb=app.config['MAX_CONTENT_LENGTH'] / 1024)
 
@@ -456,7 +522,12 @@ def login_view():
 @app.route("/predict_subject", methods=['POST'])
 def predict_subject():
     global logger
-    if 'file_name' in request.form:
+    if 'file_name' in request.form and 'kg' in request.form:
+        kg = request.form['kg'].strip()
+        parts = kg.split(',')
+        if len(parts) != 2:
+            jsonify({'error': 'Wrong KG. Expected the format source_id,ann_id'}), 400
+        source_id, ann_id = parts
         fname = request.form['file_name']
         logger.debug('predict> file_name: ' + fname)
         source_dir = os.path.join(UPLOAD_DIR, fname)
@@ -478,17 +549,26 @@ def predict_subject():
                         return jsonify({'error': 'The provided subject header is not found'}), 400
                     else:
                         logger.debug("predict> will try to annotate the subject column")
-                        entities = annotator.annotate_subject(source_dir, subject_col_id, 3, logger=logger)
+                        s = get_source(source_id)
+                        if not s:
+                            return jsonify({'error': 'The provided source is not found'}), 400
+                        entities = annotator.annotate_subject(source_url=s["url"], ann_id=ann_id, source_dir=source_dir,
+                                                              subject_col_id=subject_col_id, top_k=3, logger=logger)
                         return jsonify({'entities': entities})
         else:
-            jsonify({'error': 'The provided file does not exist on the server'}), 404
+            jsonify({'error': 'The provided file does not exist on the server or the kg is not passed'}), 404
     return jsonify({'error': 'missing values'}), 400
 
 
 @app.route("/predict_properties", methods=['POST'])
 def predict_properties():
     global logger
-    if 'file_name' in request.form:
+    if 'file_name' in request.form and 'kg' in request.form:
+        kg = request.form['kg'].strip()
+        parts = kg.split(',')
+        if len(parts) != 2:
+            jsonify({'error': 'Wrong KG. Expected the format source_id,ann_id'}), 400
+        source_id, ann_id = parts
         fname = request.form['file_name']
         logger.debug('predict_property> file_name: ' + fname)
         source_dir = os.path.join(UPLOAD_DIR, fname)
@@ -508,9 +588,18 @@ def predict_properties():
                             subject_col_id = i
 
                     if subject_col_id is None:
-                        return jsonify({'error': 'The provided subject header is not found'}), 400
+                        err_msg = 'The provided subject header is not found'
+                        print(err_msg)
+                        return jsonify({'error': err_msg}), 400
                     else:
-                        pairs = annotator.annotate_property(source_dir, subject_col_id, 3, logger=logger)
+                        s = get_source(source_id)
+                        if not s:
+                            err_msg = 'The provided source is not found'
+                            print(err_msg)
+                            return jsonify({'error': err_msg}), 400
+
+                        pairs = annotator.annotate_property(source_url=s["url"], ann_id=ann_id, source_dir=source_dir,
+                                                            subject_col_id=subject_col_id, top_k=3, logger=logger)
                         print(pairs)
                         return jsonify({'cols_properties': pairs})
         else:
@@ -532,7 +621,10 @@ def editor():
     if 'kg' in request.form:
         if request.form['kg'].strip() != "":
             kg = request.form['kg'].strip()
-
+            parts = kg.split(',')
+            if len(parts) != 2: # it should be source_id,ann_id.
+                return render_template('msg.html', msg="Source ID and Ann ID shouldn't include commas",
+                                       msg_title="Error")
     ontologies = request.form.getlist('ontologies')
     if len(ontologies) == 0:
         return render_template('msg.html', msg="You should select at least one ontology", msg_title="Error")
@@ -546,7 +638,7 @@ def editor():
         if 'sourcefile' in request.files:
             sourcefile = request.files['sourcefile']
             if sourcefile.filename != "":
-                original_file_name = sourcefile.filename
+                # original_file_name = sourcefile.filename
                 filename = secure_filename(sourcefile.filename)
                 fname = util.get_random_string(4) + "-" + filename
                 uploaded_file_dir = os.path.join(UPLOAD_DIR, fname)
@@ -579,7 +671,7 @@ def editor():
             return render_template('msg.html', msg=error_msg, msg_title="Error")
 
     headers = util.get_headers(uploaded_file_dir, file_type=file_type)
-    if headers == []:
+    if not headers:
         error_msg = "Can't parse the source file "
         return render_template('msg.html', msg=error_msg, msg_title="Error")
 

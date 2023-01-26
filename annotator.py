@@ -4,13 +4,7 @@ import io
 import traceback
 
 
-try:
-    TADA_HOST = os.environ['TADA_HOST']
-except Exception as e:
-    TADA_HOST = ''
-
-
-def annotate_subject(source_dir, subject_col_id, top_k=3, logger=None):
+def annotate_subject(source_url, ann_id, source_dir, subject_col_id, top_k=3, logger=None):
     """
     :param source_dir: the directory of the source file
     :param subject_col_id: the index of the subject column
@@ -18,6 +12,7 @@ def annotate_subject(source_dir, subject_col_id, top_k=3, logger=None):
     :return: list of string (classes)
     """
     data = {
+        'ann_source': ann_id,
         'col_id': subject_col_id,
         'alpha': 0.4,
         'k': top_k
@@ -30,7 +25,7 @@ def annotate_subject(source_dir, subject_col_id, top_k=3, logger=None):
             'text/plain'))
     ]
 
-    response = requests.request("POST", TADA_HOST+'/subject', data=data, files=files)
+    response = requests.request("POST", source_url+'/subject', data=data, files=files)
 
     if response.status_code == 200:
         print("-- entities: ")
@@ -52,7 +47,7 @@ def annotate_subject(source_dir, subject_col_id, top_k=3, logger=None):
     return entities
 
 
-def annotate_property(source_dir, subject_col_id, top_k=3, logger=None):
+def annotate_property(source_url, ann_id, source_dir, subject_col_id, top_k=3, logger=None):
     """
     :param source_dir: the directory of the source file
     :param subject_col_id: the index of the subject column
@@ -60,6 +55,7 @@ def annotate_property(source_dir, subject_col_id, top_k=3, logger=None):
     :return: list of string (classes)
     """
     data = {
+        'ann_source': ann_id,
         'subject_col_id': subject_col_id,
         'k': top_k,
     }
@@ -67,7 +63,8 @@ def annotate_property(source_dir, subject_col_id, top_k=3, logger=None):
     files = {
         'source': (source_dir.split(os.sep)[-1], open(source_dir, encoding='utf-8'), 'text/plain')
     }
-    response = requests.post(TADA_HOST+'/property', data=data, files=files)
+    print("Sending the request")
+    response = requests.post(source_url+'/property', data=data, files=files)
     if response.status_code == 200:
         print("properties: ")
         print(response.json())
@@ -84,5 +81,6 @@ def annotate_property(source_dir, subject_col_id, top_k=3, logger=None):
             print("Exception: "+str(e))
             logger.debug("annotate_property> No JSON")
             traceback.print_exc()
+    print("after the request")
     return pairs
 
