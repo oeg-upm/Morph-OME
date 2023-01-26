@@ -103,3 +103,9 @@ export TADA_HOST=""
 }
 ```
 
+
+
+
+# Funding
+This work was funded partially by EIT Digital under the WOODS project.
+
