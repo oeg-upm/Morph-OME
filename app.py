@@ -273,8 +273,6 @@ def get_annotators():
             s_anns = get_anns(source["url"])
             for ann in s_anns:
                 ann["id"] = "%s,%s" % (source["id"], ann["id"])
-            # for ann in s_anns:
-            #     ann["name"] += " -- %s" % source["name"]
             print("s_anns: ")
             print(s_anns)
             anns += s_anns
@@ -522,12 +520,17 @@ def login_view():
 @app.route("/predict_subject", methods=['POST'])
 def predict_subject():
     global logger
-    if 'file_name' in request.form and 'kg' in request.form:
+    if 'file_name' in request.form and 'kg' in request.form and 'alpha' in request.form:
         kg = request.form['kg'].strip()
         parts = kg.split(',')
         if len(parts) != 2:
-            jsonify({'error': 'Wrong KG. Expected the format source_id,ann_id'}), 400
+            return jsonify({'error': 'Wrong KG. Expected the format source_id,ann_id'}), 400
         source_id, ann_id = parts
+        try:
+            alpha = float(request.form['alpha'])
+        except Exception as e:
+            print(e)
+            return jsonify({'error': 'Invalid alpha value. It should be a float between 0 and 1.'})
         fname = request.form['file_name']
         logger.debug('predict> file_name: ' + fname)
         source_dir = os.path.join(UPLOAD_DIR, fname)
@@ -553,10 +556,11 @@ def predict_subject():
                         if not s:
                             return jsonify({'error': 'The provided source is not found'}), 400
                         entities = annotator.annotate_subject(source_url=s["url"], ann_id=ann_id, source_dir=source_dir,
-                                                              subject_col_id=subject_col_id, top_k=3, logger=logger)
+                                                              subject_col_id=subject_col_id, top_k=3,
+                                                              alpha=alpha, logger=logger)
                         return jsonify({'entities': entities})
         else:
-            jsonify({'error': 'The provided file does not exist on the server or the kg is not passed'}), 404
+            jsonify({'error': 'The provided file does not exist on the server or the kg is not passed or alpha is not passed'}), 404
     return jsonify({'error': 'missing values'}), 400
 
 

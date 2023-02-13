@@ -4,17 +4,18 @@ import io
 import traceback
 
 
-def annotate_subject(source_url, ann_id, source_dir, subject_col_id, top_k=3, logger=None):
+def annotate_subject(source_url, ann_id, source_dir, subject_col_id, alpha, top_k=3, logger=None):
     """
     :param source_dir: the directory of the source file
     :param subject_col_id: the index of the subject column
     :param top_k: the number of suggested classes to return
+    :param alpha: the alpha parameter to balance converage and specificity
     :return: list of string (classes)
     """
     data = {
         'ann_source': ann_id,
         'col_id': subject_col_id,
-        'alpha': 0.4,
+        'alpha': alpha,
         'k': top_k
     }
 

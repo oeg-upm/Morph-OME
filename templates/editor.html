@@ -9,94 +9,105 @@
 <div class="ui segment">
 
 
-
-{%if warning_msg%}
-<div class="ui warning message">
-    <div class="header">
-        Warning!
+    {%if warning_msg%}
+    <div class="ui warning message">
+        <div class="header">
+            Warning!
+        </div>
+        {{warning_msg}}
     </div>
-    {{warning_msg}}
-</div>
-{%endif%}
+    {%endif%}
 
-{%if error_msg%}
-<div class="ui error message">
-    <div class="header">
-        Error!
-    </div>
-</div>
-{%endif%}
-
-<br>
-
-<form method="POST" id="editor-form" action="generate_mapping" class="ui form" enctype=multipart/form-data>
-
-    <input type="text" name="file_name" value="{{file_name}}" id="file_name" readonly>
-    <input type="hidden" name="format" value="csv">
-    <input type="text" name="kg" value="{{kg}}" readonly>
-    <input type="hidden" name="callback" value="{{callback}}">
-
-
-
-    <div class="field">
-        <label for="entity_column">Entity Column (primary key)</label>
-        <select class="ui dropdown" name="entity_column" id="entity_column">
-
-            <option disabled selected value> -- select the subject column --</option>
-            {%for header in headers%}
-            <option value="{{header}}">{{header}}</option>
-            {%endfor%}
-
-        </select>
-    </div>
-
-    <div class="ui-widget field">
-        <label for="concept">Choose the concept of this file: </label>
-        <input id="concept" name="entity_class"/>
-    </div>
-
-    <div id="progressbar"></div>
-    <hr>
-
-    <table class="ui single line table ">
-        <thead>
-        <tr>
-            <th scope="col">Header</th>
-            <th scope="col">Schema</th>
-        </tr>
-        </thead>
-        <tbody>
-
-        {%for header in headers%}
-        <tr>
-            <td>{{header}}</td>
-            <td><input type="text" name="form_val_{{loop.index}}" class="property"></td>
-        </tr>
-        <input type="hidden" name="form_key_{{loop.index}}" value="{{header}}"/>
-        {%endfor%}
-        </tbody>
-    </table>
-    <br>
-
-
-    <div class="ui form">
-        <div class="field">
-            <label>Mapping Language</label>
-            <select class="ui search dropdown" form="editor-form" name="mapping_lang">
-                {%if current_user.is_authenticated %}
-                    <option value="kg-rml">Online KG (using RML Mapper)</option>
-                    <!--<option value="kg-r2rml">Online KG (using Morph-RDB)</option>-->
-                {%endif%}
-                <option value="r2rml">R2RML</option>
-                <option value="rml">RML</option>
-                <option value="yarrrml">YARRRML</option>
-            </select>
+    {%if error_msg%}
+    <div class="ui error message">
+        <div class="header">
+            Error!
         </div>
     </div>
+    {%endif%}
+
+    <br>
+
+    <form method="POST" id="editor-form" action="generate_mapping" class="ui form" enctype=multipart/form-data>
+
+        <input type="hidden" name="file_name" value="{{file_name}}" id="file_name" readonly>
+        <input type="hidden" name="format" value="csv">
+        <input type="hidden" name="kg" value="{{kg}}" readonly>
+        <input type="hidden" name="callback" value="{{callback}}">
 
 
-    <button type="submit" class="fluid ui blue button">Generate Mappings</button>
-</form>
+
+        <div class="field">
+            <label for="entity_column">Entity Column</label>
+            <select class="ui dropdown" name="entity_column" id="entity_column">
+
+                <option disabled selected value> -- select the subject column --</option>
+                {%for header in headers%}
+                <option value="{{header}}">{{header}}</option>
+                {%endfor%}
+
+            </select>
+        </div>
+        <div class="field">
+            <label for="alpha" class="form-label">Alpha</label>
+            <input type="range" class="form-range blue ui" value="0.1" min="0" max="1" step="0.01" id="alpha"
+                   oninput="this.nextElementSibling.value = this.value; $('#entity_column').change();">
+            <output>0.1</output>
+<!--            <span class="button ui"> update </span>-->
+        </div>
+
+        <div class="ui-widget field">
+            <label for="concept">Choose the concept of this file: </label>
+            <input id="concept" name="entity_class"/>
+        </div>
+
+        <div id="progressbar"></div>
+
+        <!--    <div id="progressbar" class="progress">-->
+        <!--  <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" style="width: 75%"></div>-->
+        <!--</div>-->
+
+        <hr>
+
+        <table class="ui single line table ">
+            <thead>
+            <tr>
+                <th scope="col">Header</th>
+                <th scope="col">Schema</th>
+            </tr>
+            </thead>
+            <tbody>
+
+            {%for header in headers%}
+            <tr>
+                <td>{{header}}</td>
+                <td><input type="text" name="form_val_{{loop.index}}" class="property"></td>
+            </tr>
+            <input type="hidden" name="form_key_{{loop.index}}" value="{{header}}"/>
+            {%endfor%}
+            </tbody>
+        </table>
+        <br>
+
+
+        <div class="ui form">
+            <div class="field">
+                <label>Mapping Language</label>
+                <select class="ui search dropdown" form="editor-form" name="mapping_lang">
+                    {%if current_user.is_authenticated %}
+                    <option value="kg-rml">Online KG (using RML Mapper)</option>
+                    <!--<option value="kg-r2rml">Online KG (using Morph-RDB)</option>-->
+                    {%endif%}
+                    <option value="r2rml">R2RML</option>
+                    <option value="rml">RML</option>
+                    <option value="yarrrml">YARRRML</option>
+                </select>
+            </div>
+        </div>
+
+
+        <button type="submit" class="fluid ui blue button">Generate Mappings</button>
+    </form>
 
 </div>
 
@@ -110,10 +121,12 @@ var subject_header;
 var cols_properties = [];
 var predicted_classes= new Array(0);
 var the_file_name;
+var alpha;
 
 var labels = [
         {{labels_txt|safe}}
 ];
+
 
   $( function() {
 
@@ -151,10 +164,11 @@ $("#entity_column").change(function (){
     console.log(subject_header);
     console.log($("#file_name").val());
     the_file_name = $("#file_name").val();
+    alpha = $("#alpha").val();
     $.ajax({
       type: "POST",
       url: "predict_subject",
-      data: {"subject": subject_header, "file_name":the_file_name, "kg": "{{kg}}" },
+      data: {"subject": subject_header, "file_name":the_file_name, "alpha": alpha, "kg": "{{kg}}" },
     })
     .done(function(data){
         //console.log('success!');
@@ -291,15 +305,17 @@ function predict_all_properties(){
 {%endif%}
 
 
+
+
 </script>
 
 
-<style>
-  #progressbar .ui-progressbar-value {
-    background-color: #FFA500;
-  }
+<!--<style>-->
+<!--  #progressbar .ui-progressbar-value {-->
+<!--    background-color: #FFA500;-->
+<!--  }-->
 
-</style>
+<!--</style>-->
 
 
 {%endblock%}
