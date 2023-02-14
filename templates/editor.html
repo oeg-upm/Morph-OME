@@ -133,7 +133,7 @@ var labels = [
     $( "#concept" ).autocomplete({
           source: labels,
           select: function( event, ui ) {
-            console.log('item is chosen');
+            console.log('autocomplete> item is chosen');
             //console.log($("#concept").val());
             console.log(ui.item.value);
             //fetch_properties();
@@ -141,15 +141,22 @@ var labels = [
             //add_predicted_properties();
            }, // select function
            response: function (event, ui){
-                 console.log('concept autocomplete response');
-                /*
+                 console.log('\n\n\n\n********concept autocomplete response');
+
+
+                
                 console.log('check comment');
                 for(var i=predicted_classes.length-1;i>=0;i--){
                     ui.content.unshift(predicted_classes[i]);
                 }
                 console.log('updated');
                 console.log(ui.content);
-                */
+
+
+
+
+
+
            }, // response function
     });//auto complete
 } );
@@ -292,7 +299,6 @@ function predict_all_properties(){
                 })
                 .always(function(data){
                    $("#progressbar").hide(progress_speed);
-
                 })
                 ;
 }
