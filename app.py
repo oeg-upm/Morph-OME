@@ -602,8 +602,13 @@ def predict_properties():
                             print(err_msg)
                             return jsonify({'error': err_msg}), 400
 
+                        class_uri = None
+                        if 'class_uri' in request.form:
+                            if len(request.form['class_uri'].strip()) > 0:
+                                class_uri = request.form['class_uri'].strip()
                         pairs = annotator.annotate_property(source_url=s["url"], ann_id=ann_id, source_dir=source_dir,
-                                                            subject_col_id=subject_col_id, top_k=3, logger=logger)
+                                                            subject_col_id=subject_col_id, top_k=3, logger=logger,
+                                                            class_uri=class_uri)
                         print(pairs)
                         return jsonify({'cols_properties': pairs})
         else:

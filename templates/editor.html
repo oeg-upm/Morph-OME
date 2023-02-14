@@ -36,7 +36,6 @@
         <input type="hidden" name="callback" value="{{callback}}">
 
 
-
         <div class="field">
             <label for="entity_column">Entity Column</label>
             <select class="ui dropdown" name="entity_column" id="entity_column">
@@ -48,13 +47,23 @@
 
             </select>
         </div>
+
         <div class="field">
             <label for="alpha" class="form-label">Alpha</label>
             <input type="range" class="form-range blue ui" value="0.1" min="0" max="1" step="0.01" id="alpha"
                    oninput="this.nextElementSibling.value = this.value; $('#entity_column').change();">
             <output>0.1</output>
-<!--            <span class="button ui"> update </span>-->
+            <!--            <span class="button ui"> update </span>-->
         </div>
+
+
+<!--        <div class="form-check">-->
+<!--            <input class="form-check-input" type="checkbox" value="" id="strict">-->
+<!--            <label class="form-check-label" for="strict">-->
+<!--                Strict-->
+<!--            </label>-->
+<!--        </div>-->
+
 
         <div class="ui-widget field">
             <label for="concept">Choose the concept of this file: </label>
@@ -133,7 +142,10 @@ var labels = [
     $( "#concept" ).autocomplete({
           source: labels,
           select: function( event, ui ) {
+
             console.log('autocomplete> item is chosen');
+            //To clear property predictions
+            $(".property").val("");
             //console.log($("#concept").val());
             console.log(ui.item.value);
             //fetch_properties();
@@ -144,18 +156,13 @@ var labels = [
                  console.log('\n\n\n\n********concept autocomplete response');
 
 
-                
+
                 console.log('check comment');
                 for(var i=predicted_classes.length-1;i>=0;i--){
                     ui.content.unshift(predicted_classes[i]);
                 }
                 console.log('updated');
                 console.log(ui.content);
-
-
-
-
-
 
            }, // response function
     });//auto complete
@@ -172,10 +179,12 @@ $("#entity_column").change(function (){
     console.log($("#file_name").val());
     the_file_name = $("#file_name").val();
     alpha = $("#alpha").val();
+    var data = {"subject": subject_header, "file_name":the_file_name, "alpha": alpha, "kg": "{{kg}}" }
+
     $.ajax({
       type: "POST",
       url: "predict_subject",
-      data: {"subject": subject_header, "file_name":the_file_name, "alpha": alpha, "kg": "{{kg}}" },
+      data: data,
     })
     .done(function(data){
         //console.log('success!');
@@ -282,25 +291,32 @@ function add_predicted_properties(){
 {%if kg%}
 
 function predict_all_properties(){
-               console.log("now is sending the predict properties")
-               console.log("subject_header: "+subject_header)
-               console.log("file_name: "+the_file_name)
-                $.ajax({
-                  type: "POST",
-                  url: "/predict_properties",
-                  data: {"subject": subject_header, "file_name":the_file_name, "kg": "{{kg}}", "k":3},
-                  async: true,
-                }).done(function(data){
-                    console.log("cols_properties pairs:")
-                    console.log(data)
-                    console.log(data["cols_properties"])
-                    cols_properties = data["cols_properties"]
-                    add_predicted_properties()
-                })
-                .always(function(data){
-                   $("#progressbar").hide(progress_speed);
-                })
-                ;
+    console.log("now is sending the predict properties")
+    console.log("subject_header: "+subject_header)
+    console.log("file_name: "+the_file_name)
+
+    console.log("\n\n\n*******")
+    var data={"subject": subject_header, "file_name":the_file_name, "kg": "{{kg}}", "k":3}
+    data["class_uri"] = $("#concept").val();
+
+
+
+    $.ajax({
+      type: "POST",
+      url: "/predict_properties",
+      data: data,
+      async: true,
+    }).done(function(data){
+        console.log("cols_properties pairs:")
+        console.log(data)
+        console.log(data["cols_properties"])
+        cols_properties = data["cols_properties"]
+        add_predicted_properties()
+    })
+    .always(function(data){
+       $("#progressbar").hide(progress_speed);
+    })
+    ;
 }
 
 {%else%}
@@ -309,6 +325,9 @@ function predict_all_properties(){
 }
 
 {%endif%}
+
+
+
 
 
 
