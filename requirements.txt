@@ -15,4 +15,4 @@ rdflib==6.2.0
 requests==2.28.1
 six==1.11.0
 SQLAlchemy==1.4.2
-Werkzeug==1.0.1
+Werkzeug==2.2.3
